@@ -111,14 +111,19 @@
     else if(route.view==='course'&&c){out=coursePage(c);title=`${c.id}과목 · ${c.title}`;}
     else if(route.view==='lesson'&&c&&c.sections[route.section-1]){out=lessonPage(c,c.sections[route.section-1]);title=`${c.id}과목 · ${c.sections[route.section-1].title}`;}
     else if(route.view==='quiz'&&c){out=quizPage(c);title=`${c.id}과목 복습문제`;}
-    else if(route.view==='notes'){title='내 노트';out='<header class="page-head"><h1>내 노트</h1><p>단원을 골라 나만의 시험 노트를 작성하세요.</p></header><section class="reading-paper" id="personal-notes"></section>';}
+    else if(route.view==='settings' || route.view==='notes'){
+      route.view='settings';
+      title='설정';
+      out='<header class="page-head"><h1>설정</h1></header><section class="reading-paper" id="backup-settings"></section>';
+    }
     else if(route.view==='terms'){out=termsPage();title='용어 정리';}
     else if(route.view==='maps'){out=mapsPage();title='개념 지도';}
     else if(route.view==='basics'){out=basicsPage();title='추가 개념';}
     else if(route.view==='saved'){out=savedPage();title='저장한 단원';}
     else {out=`<div class="empty-state"><p>찾는 학습 페이지가 없어요.</p>${button('#/home','학습 홈으로')}</div>`;title='페이지를 찾을 수 없어요';}
     $('#main').innerHTML=out;$('#top-breadcrumb').textContent=title;document.title=`${title} | SQLD 학습 노트`;sidebar();decorate();
-    studyNotes.mount(route.view === 'lesson' ? lessonKey(route.course, route.section) : null);
+    if(route.view==='lesson') studyNotes.mountLesson(lessonKey(route.course, route.section));
+    if(route.view==='settings') studyNotes.mountSettings();
     if(scroll){window.scrollTo(0,0);$('#main').focus({preventScroll:true});}
     closeMenu();
     if(route.map&&maps.some(m=>m.slug===route.map)){requestAnimationFrame(()=>document.getElementById(`map-${route.map}`)?.scrollIntoView({block:'start'}));}

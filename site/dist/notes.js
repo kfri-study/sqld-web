@@ -3,7 +3,6 @@ const studyNotes = (() => {
   const units = new Map(window.STUDY_CONTENT.flatMap(c =>
     c.sections.map(s => [c.id + '-' + s.id, c.id + '과목 · ' + s.id + '. ' + s.title])));
   let notes = Object.create(null);
-  let selected = units.keys().next().value;
   let storageAvailable = true;
 
   let backupFile = null;
@@ -53,31 +52,34 @@ const studyNotes = (() => {
     } catch { storageAvailable = false; }
     return storageAvailable;
   }
-  function mount(key) {
+  function mountLesson(key) {
     const root = document.getElementById('personal-notes');
-    if (!root) return;
-    if (units.has(key)) selected = key;
-    root.innerHTML = '<label class="note-unit">메모할 단원 <select></select></label><label class="note-label">내 메모<textarea rows="6" placeholder="강사가 강조한 점이나 헷갈린 내용을 적어 보세요."></textarea></label><p class="note-status" role="status"></p><div class="note-actions"><button type="button" data-save>전체 노트 파일로 저장</button><button type="button" data-location hidden>다른 위치에 저장</button><button type="button" data-open>내 파일 열기</button><input type="file" accept=".json,.txt,.md" hidden></div><p data-destination></p><small>JSON은 모든 단원의 백업 파일이에요. TXT·MD는 선택한 단원의 메모로 열어요.</small>';
-    const select = root.querySelector('select');
+    if (!root || !units.has(key)) return;
+    root.innerHTML = `<label>이 단원의 메모<textarea rows="6" placeholder="헷갈린 개념이나 오답 이유를 적어 보세요."></textarea></label>
+      <p class="note-status" role="status"></p><a href="#/settings">백업 설정 ↗</a>`;
     const editor = root.querySelector('textarea');
     const status = root.querySelector('[role=status]');
-    const picker = root.querySelector('input');
-    for (const [id, title] of units) select.add(new Option(title, id));
-    select.value = selected;
-    select.closest('label').hidden = units.has(key);
-    editor.value = notes[selected] || '';
-    const unit = () => select.value;
-    status.textContent = storageAvailable ? '입력하면 이 브라우저에 자동 저장돼요.' : '브라우저 저장이 제한돼요. 파일로 저장해 주세요.';
-    select.onchange = () => {
-      selected = unit();
-      editor.value = notes[selected] || '';
-      status.textContent = storageAvailable ? '선택한 단원의 메모예요.' : '파일로 저장해 주세요.';
-    };
+    editor.value = notes[key] || '';
+    status.textContent = storageAvailable ? '입력하면 이 브라우저에 자동 저장돼요.' : '브라우저 저장이 제한돼요. 설정에서 파일로 백업해 주세요.';
     editor.oninput = () => {
-      if (editor.value) notes[unit()] = editor.value;
-      else delete notes[unit()];
-      status.textContent = persist() ? '이 브라우저에 저장했어요.' : '브라우저에 저장하지 못했어요. 파일로 저장해 주세요.';
+      if (editor.value) notes[key] = editor.value;
+      else delete notes[key];
+      status.textContent = persist() ? '이 브라우저에 저장했어요.' : '설정에서 파일로 백업해 주세요.';
     };
+  }
+  function mountSettings() {
+    const root = document.getElementById('backup-settings');
+    root.innerHTML = `<h2>노트 백업 위치</h2><p data-destination></p>
+      <div class="note-actions"><button type="button" data-save disabled>백업 위치 확인 중</button><button type="button" data-location hidden>다른 위치에 저장</button></div>
+      <p>백업 버튼을 누르면 모든 단원의 메모가 한 파일에 저장돼요.</p>
+      <h2>노트 복원</h2><p>JSON 백업은 원래 단원으로 복원돼요. TXT·MD 파일은 아래에서 고른 단원으로 가져와요.</p>
+      <label>TXT·MD를 가져올 단원 <select></select></label>
+      <div class="note-actions"><button type="button" data-open>내 파일 열기</button><input type="file" accept=".json,.txt,.md" hidden></div>
+      <p class="note-status" role="status"></p>`;
+    const select = root.querySelector('select');
+    for (const [id, title] of units) select.add(new Option(title, id));
+    const status = root.querySelector('[role=status]');
+    const picker = root.querySelector('input');
     const saveButton = root.querySelector('[data-save]');
     const changeButton = root.querySelector('[data-location]');
     function showLocation() {
@@ -130,7 +132,7 @@ const studyNotes = (() => {
     root.querySelector('[data-open]').onclick = () => picker.click();
     picker.onchange = async () => {
       const file = picker.files[0];
-      const destination = unit();
+      const destination = select.value;
       if (!file) return;
       picker.value = '';
       try {
@@ -146,10 +148,9 @@ const studyNotes = (() => {
         if (conflicts.length && !confirm('이미 작성한 ' + conflicts.length + '개 단원의 메모가 달라요. 파일 내용으로 바꿀까요?')) return;
         Object.assign(notes, incoming);
         const saved = persist();
-        editor.value = notes[unit()] || '';
         status.textContent = saved ? '파일을 읽고 이 브라우저에 저장했어요.' : '파일을 읽었어요. 브라우저 저장 공간이 부족해요.';
       } catch {status.textContent = '파일을 읽을 수 없어요. SQLD 백업 JSON 또는 UTF-8 TXT·MD 파일을 선택해 주세요.';}
     };
   }
-  return {mount};
+  return {mountLesson, mountSettings};
 })();
