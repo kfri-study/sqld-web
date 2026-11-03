@@ -62,12 +62,40 @@ const studyNotes = (() => {
     editor.value = notes[key] || '';
     const popup = document.getElementById('lesson-note-dialog');
     const opener = document.getElementById('open-lesson-note');
-    opener.onclick = () => {
-      popup.showModal();
+    const lecture = document.querySelector('.lesson-lecture a[href*="youtube.com/watch"]');
+    const player = popup.querySelector('iframe');
+    const external = popup.querySelector('[data-youtube]');
+    function openAlongside(link) {
+      if (link) {
+        const url = new URL(link.href);
+        const video = url.searchParams.get('v');
+        const seconds = parseInt(url.searchParams.get('t'), 10) || 0;
+        const source = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(video) + '?start=' + seconds;
+        if (player.getAttribute('src') !== source) player.src = source;
+        external.href = url.href;
+      }
+      popup.hidden = false;
+      opener.hidden = true;
+      opener.setAttribute('aria-expanded', 'true');
       editor.focus({preventScroll:true});
-    };
-    popup.querySelector('[data-close-note]').onclick = () => popup.close();
-    popup.onclose = () => opener.focus({preventScroll:true});
+    }
+    function closePanel() {
+      player.removeAttribute('src');
+      popup.hidden = true;
+      opener.hidden = false;
+      opener.setAttribute('aria-expanded', 'false');
+      opener.focus({preventScroll:true});
+    }
+    opener.onclick = () => openAlongside(lecture);
+    document.querySelectorAll('.reading-paper.prose a[href^="https://www.youtube.com/watch"]').forEach(link => {
+      link.onclick = event => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        openAlongside(link);
+      };
+    });
+    popup.querySelector('[data-close-note]').onclick = closePanel;
+    popup.onkeydown = event => { if (event.key === 'Escape') closePanel(); };
     status.textContent = storageAvailable ? '입력하면 이 브라우저에 자동 저장돼요.' : '브라우저 저장이 제한돼요. 설정에서 파일로 백업해 주세요.';
     editor.oninput = () => {
       if (editor.value) notes[key] = editor.value;
