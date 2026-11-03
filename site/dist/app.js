@@ -139,22 +139,27 @@
     document.body.classList.toggle('toc-collapsed', !mobile && tocCollapsed);
     $('#sidebar').classList.toggle('open', mobile && visible);
     $('#shade').classList.toggle('open', mobile && visible);
-    $('#sidebar').inert = !visible;
     const toggle = $('#menu-button');
+    const host = visible ? $('#sidebar') : document.body;
+    if (toggle.parentElement !== host) host.prepend(toggle);
+    $('#sidebar').inert = !visible;
     toggle.setAttribute('aria-expanded', String(visible));
     toggle.setAttribute('aria-label', label);
-    toggle.textContent = mobile ? '☰' : label;
+    toggle.title = label;
+    toggle.textContent = visible ? '‹' : '›';
   }
   function closeMenu() { updateMenu(false); }
   mobileQuery.addEventListener('change', closeMenu);
   $('#menu-button').addEventListener('click', () => {
     if (mobileQuery.matches) {
       updateMenu(!$('#sidebar').classList.contains('open'));
+      $('#menu-button').focus({preventScroll:true});
       return;
     }
     tocCollapsed = !tocCollapsed;
     try { localStorage.setItem('sqld-toc-collapsed', String(tocCollapsed)); } catch {}
     updateMenu();
+    $('#menu-button').focus({preventScroll:true});
   });
   $('#shade').addEventListener('click',closeMenu);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
