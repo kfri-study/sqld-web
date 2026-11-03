@@ -102,6 +102,11 @@ const studyNotes = (() => {
   };
   grip.onlostpointercapture = () => { drag = null; rememberPosition(); };
   window.addEventListener('resize', place);
+  let firstLesson = true;
+  const openPreference = 'sqld-panel-open';
+  function rememberOpen(open) {
+    try { localStorage.setItem(openPreference, String(open)); } catch {}
+  }
   function mountLesson(key) {
     const root = document.getElementById('personal-notes');
     if (!root || !units.has(key)) return;
@@ -118,7 +123,7 @@ const studyNotes = (() => {
     const lecture = document.querySelector('.lesson-lecture a[href*="youtube.com/watch"]');
     const player = popup.querySelector('iframe');
     const external = popup.querySelector('[data-youtube]');
-    function openAlongside(link) {
+    function openAlongside(link, interactive = true) {
       if (link) {
         const url = new URL(link.href);
         const video = url.searchParams.get('v');
@@ -131,14 +136,27 @@ const studyNotes = (() => {
       place();
       opener.hidden = true;
       opener.setAttribute('aria-expanded', 'true');
-      editor.focus({preventScroll:true});
+      if (interactive) {
+        rememberOpen(true);
+        editor.focus({preventScroll:true});
+      }
     }
     function closePanel() {
+      rememberOpen(false);
       player.removeAttribute('src');
       popup.hidden = true;
       opener.hidden = false;
       opener.setAttribute('aria-expanded', 'false');
       if (opener.isConnected) opener.focus({preventScroll:true});
+    }
+    if (firstLesson) {
+      firstLesson = false;
+      let startOpen = window.matchMedia('(min-width: 701px)').matches;
+      try {
+        const saved = localStorage.getItem(openPreference);
+        if (saved !== null) startOpen = saved === 'true';
+      } catch {}
+      if (startOpen) openAlongside(lecture, false);
     }
     opener.onclick = () => openAlongside(lecture);
     document.querySelectorAll('.reading-paper.prose a[href^="https://www.youtube.com/watch"]').forEach(link => {

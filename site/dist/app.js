@@ -145,8 +145,8 @@
     if(route.map&&maps.some(m=>m.slug===route.map)){requestAnimationFrame(()=>document.getElementById(`map-${route.map}`)?.scrollIntoView({block:'start'}));}
   }
   const mobileQuery=window.matchMedia('(max-width:700px)');
-  let tocCollapsed = false;
-  try { tocCollapsed = localStorage.getItem('sqld-toc-collapsed') === 'true'; } catch {}
+  let tocCollapsed = true;
+  try { tocCollapsed = localStorage.getItem('sqld-toc-collapsed') !== 'false'; } catch {}
   function updateMenu(mobileOpen = false) {
     const mobile = mobileQuery.matches;
     const visible = mobile ? mobileOpen : !tocCollapsed;
@@ -216,5 +216,10 @@
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!searchDialog.open)openSearch();}});
   window.addEventListener('hashchange',()=>{quizFilter='all';render();});
   window.addEventListener('storage',e=>{if(e.key===KEY){try{const next=JSON.parse(e.newValue||'{}');for(const key of Object.keys(state))state[key]=next[key]&&typeof next[key]==='object'?next[key]:{};render({scroll:false});}catch{}}});
+  if (!location.hash) {
+    const nextCourse = courses.find(course => course.sections.some(section => !state.done[lessonKey(course.id, section.id)])) || courses[0];
+    const nextSection = nextCourse.sections.find(section => !state.done[lessonKey(nextCourse.id, section.id)]) || nextCourse.sections[0];
+    history.replaceState(null, '', lessonURL(nextCourse.id, nextSection.id));
+  }
   render();
 })();
