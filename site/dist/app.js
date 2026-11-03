@@ -5,7 +5,7 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const plain = html => { const d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; };
   const KEY = 'sqld-public-notes-v2';
-  let state = { done: {}, saved: {}, quiz: {}, drafts: {} }, storageOK = true;
+  let state = { done: {}, saved: {}, quiz: {}, drafts: {}, videos: {} }, storageOK = true;
   try {
     const old = JSON.parse(localStorage.getItem(KEY) || '{}');
     for (const key of Object.keys(state)) if (old[key] && typeof old[key] === 'object' && !Array.isArray(old[key])) state[key] = old[key];
@@ -33,11 +33,27 @@
     document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.dataset.nav===route.view;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
     if(!storageOK) $('#storage-state').textContent='저장이 제한되어 이번 방문에서만 유지돼요.';
   }
+  const videos = [
+    { id: 'e_AIZkWJNqA', title: '1과목 요약 강의', index: 2 },
+    { id: 'Rv4Q4ZrPS94', title: '2과목 요약 강의', index: 3 }
+  ];
+  function videoCount() {
+    return videos.filter(video => state.videos[video.id]).length;
+  }
+  function videoProgress() {
+    return `<section aria-labelledby="video-heading"><div class="section-heading"><h2 id="video-heading">유튜브 강의 진도</h2><span id="video-count" aria-live="polite">${videoCount()} / 2강 완료</span></div>
+      <p>강의를 다 들으면 ‘시청 완료’를 체크해 줘. 이 브라우저에 저장돼.</p>
+      <div class="video-list">${videos.map(video => `<div class="video-row">
+        <a href="https://www.youtube.com/watch?v=${video.id}&amp;list=PLWtr7MRpQi5BbdqJhNKXZSvPqYHT_rZkS&amp;index=${video.index}" target="_blank" rel="noopener noreferrer">${video.title} ↗</a>
+        <label><input type="checkbox" data-video="${video.id}" aria-label="${video.title} 시청 완료" ${state.videos[video.id] ? 'checked' : ''}> 시청 완료</label>
+      </div>`).join('')}</div></section>`;
+  }
   function home() {
     const c1=courses[0],c2=courses[1];
     const next=courses.flatMap(c=>c.sections.map(s=>({c,s}))).find(({c,s})=>!state.done[lessonKey(c.id,s.id)]) || {c:c1,s:c1.sections[0]};
     const suggested=courses.flatMap(c=>c.sections.filter(s=>!state.done[lessonKey(c.id,s.id)]).slice(0,2).map(s=>({c,s}))).slice(0,4);
     return `<section class="hero"><div><p class="eyebrow">SQL DEVELOPER / STUDY NOTES</p><h1>개념을 이해하고,<br><em>문제로 확인하세요.</em></h1><p class="hero-copy">작은 데이터와 직접 만든 예제로,<br>개념을 이해하고 결과를 계산하는 학습 공간.</p>${button(lessonURL(next.c.id,next.s.id),totalDone()?'이어서 공부하기':'첫 단원 시작하기')}</div><div class="hero-visual" aria-label="학생과 과목을 수강으로 연결하는 개념도"><div class="visual-label">MAKE THE CONNECTION.</div><div class="visual-relation"><div class="tiny-entity"><b>학생</b><span>PK student_id</span><span>student_name</span></div><span class="tiny-link"></span><div class="tiny-entity focus"><b>수강</b><span>FK student_id</span><span>FK course_id</span></div><span class="tiny-link"></span><div class="tiny-entity"><b>과목</b><span>PK course_id</span><span>course_name</span></div></div><p class="visual-caption">따로 외웠던 개념들이 하나로 연결되는 순간.</p><div class="hero-dots"><span></span><span></span><span></span></div></div></section>
+    ${videoProgress()}
     <div class="section-heading"><h2>나의 학습 과목</h2><span>전체 ${totalDone()} / 28단원 완료</span></div>
     <section class="course-grid" aria-label="과목 선택">${courses.map(c=>`<article class="course-card"><div class="course-top"><span class="subject-label">SUBJECT 0${c.id}</span><span class="time-chip">직접 풀어보는 개념 노트</span></div><h3>${c.title}</h3><p class="desc">${c.id===1?'엔터티와 관계부터 정규화까지,<br>데이터의 구조를 이해하는 첫걸음.':'조회와 집계부터 조인·윈도우 함수까지,<br>SQL을 읽고 결과를 계산하는 연습.'}</p><div class="course-meta"><span>▤ ${c.sections.length}개 단원</span><span>□ 복습 ${c.questions.length}문제</span><span>＋ 공식 문서 참고</span></div>${progress(c)}<div class="course-card-bottom"><a href="#/course/${c.id}" class="link-arrow">단원 살펴보기 <span class="arrow">→</span></a><a href="#/quiz/${c.id}">복습문제 풀기 ↗</a></div></article>`).join('')}</section>
     <section class="home-lower"><div><div class="section-heading"><h2>다음에 공부할 단원</h2><a href="#/maps">개념 지도 보기 ↗</a></div><div class="lesson-list">${(suggested.length?suggested:[next]).map(({c,s})=>`<a class="lesson-row" href="${lessonURL(c.id,s.id)}"><span class="number">${String(s.id).padStart(2,'0')}</span><span class="label">${esc(s.title)}<span class="detail">${c.id}과목 · 핵심 개념과 보충 설명</span></span><span class="status">학습하기 →</span></a>`).join('')}</div></div><aside><div class="section-heading"><h2>이렇게 공부해 보세요</h2></div><div class="study-note"><h3>읽고 끝내지 않는 3단계 학습</h3>${[['핵심 한 줄로 시작','업무 규칙과 데이터의 의미부터 살펴봐요.'],['예제 결과를 직접 계산','해설을 보기 전에 내 답을 먼저 적어봐요.'],['헷갈린 문제는 다시 보기','복습 표시를 남기고 다음 날 다시 풀어요.']].map(([a,b],i)=>`<div class="study-step"><span>0${i+1}</span><p><b>${a}</b>${b}</p></div>`).join('')}</div></aside></section><p class="source-note">공개용으로 새로 작성한 설명·예제·연습문제입니다. 공식 문서와 참고 강의는 과목별 참고자료에 표시했습니다.<br>영상·자막·첨부 PDF는 제공하지 않습니다. 공식 시험자료나 제작자의 감수 자료가 아닙니다.</p>`;
@@ -106,6 +122,12 @@
     const q=e.target.closest('[data-quiz]');if(q){const key=q.dataset.quiz;state.quiz[key]=q.dataset.status;persist();const id=q.closest('.quiz-card').id;const y=window.scrollY;render({scroll:false});const card=document.getElementById(id);if(card){card.querySelector('details').open=true;card.querySelector(`[data-status="${q.dataset.status}"]`)?.focus({preventScroll:true});}window.scrollTo(0,y);toast(q.dataset.status==='known'?'이해한 문제로 표시했어요.':q.dataset.status==='review'?'다시 볼 문제에 추가했어요.':'학습 표시를 지웠어요.');}
   });
   document.addEventListener('change',e=>{if(e.target.id==='complete-lesson'){state.done[lessonKey(route.course,route.section)]=e.target.checked;persist();sidebar();toast(e.target.checked?'한 단원 완료! 차근차근 쌓이고 있어요.':'완료 표시를 해제했어요.');}});
+  document.addEventListener('change', e => {
+    if (!e.target.matches('[data-video]')) return;
+    state.videos[e.target.dataset.video] = e.target.checked;
+    persist();
+    $('#video-count').textContent = `${videoCount()} / 2강 완료`;
+  });
   document.addEventListener('input',e=>{if(e.target.matches('[data-draft]')){state.drafts[e.target.dataset.draft]=e.target.value;persist();}});
   const searchDialog=$('#search-dialog'),input=$('#search-input');
   function search(){const term=input.value.trim().toLocaleLowerCase();if(!term){$('#search-results').innerHTML='';$('#search-help').textContent='시험 단원과 추가 개념에서 찾아요.';return;}
