@@ -8,6 +8,10 @@
 
 **핵심 한 줄:** 조회·데이터 변경·구조 변경·권한·확정은 서로 다른 작업이다.
 
+[강의 04:46 · 관계대수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=286s)
+
+행 선택(Selection)은 조건을 만족하는 행을 남기고, 열 선택(Projection)은 필요한 속성만 남긴다. 두 행과 세 행을 조건 없이 곱하면 여섯 조합이다. 그중 두 키가 일치하는 조합만 남기는 것이 등가 조인을 이해하는 출발점이다.
+
 | 분류 | 목적 | 예 |
 |---|---|---|
 | 조회 및 데이터 조작 | 값을 읽거나 행을 바꿈 | SELECT, INSERT, UPDATE, DELETE, MERGE |
@@ -24,6 +28,10 @@ SELECT를 DML에 포함하거나 DQL로 따로 부르는 분류가 있다. 명�
 ## 2 실습 표와 SELECT 해석
 
 **핵심 한 줄:** 입력 표와 각 단계의 결과를 구분하면 복잡한 조회도 추적할 수 있다.
+
+[강의 06:38 · SELECT와 별칭](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=398s)
+
+DISTINCT는 출력 열 전체의 조합에 적용된다. LOAN에서 지점 10이 두 번 나오면 SELECT DISTINCT branch_id에서는 한 행이다. loan_id까지 함께 출력하면 두 대여가 서로 달라 두 행이 남는다.
 
 직접 만든 도서 대여 서비스의 대여 기록 `LOAN`을 사용한다. FEE는 확정 대여료, LATE_FEE는 연체료다. NULL은 아직 값이 없다는 뜻이다.
 
@@ -54,6 +62,10 @@ ORDER BY fee DESC, loan_id;
 
 **핵심 한 줄:** SQL 조건은 TRUE·FALSE 외에 UNKNOWN이 될 수 있다.
 
+[강의 23:01 · NULL 처리 함수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1381s)
+
+COALESCE(NULL, 0, 7)의 결과는 0이다. 왼쪽부터 처음 만나는 NULL 아닌 값을 택하기 때문이다. NULLIF(0, 0)은 두 값이 같으므로 NULL이다. 0을 유효한 값으로 보존할지부터 정한 뒤 함수를 고른다.
+
 `fee > 100`에서 FEE가 NULL인 15번 행은 UNKNOWN이다. WHERE는 TRUE인 행만 남기므로 15번은 결과에서 제외된다. `NOT (fee > 100)`으로 바꾸어도 UNKNOWN은 TRUE로 바뀌지 않는다.
 
 | 의도 | 쓸 조건 |
@@ -70,6 +82,10 @@ ORDER BY fee DESC, loan_id;
 ## 4 행마다 계산하는 표현식
 
 **핵심 한 줄:** 단일행 함수는 각 입력 행에 적용할 값을 계산한다.
+
+[강의 14:23 · 단일행 함수와 변환](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=863s)
+
+Oracle 예시에서 TO_DATE('2026-11-03', 'YYYY-MM-DD')는 문자를 날짜로 바꾸고 TO_CHAR는 날짜나 숫자를 표시할 문자로 바꾼다. 문자열 SQL_01에서 SUBSTR('SQL_01', 1, 3)은 SQL이다. 함수가 돌려주는 값의 자료형까지 확인한다.
 
 ```sql
 SELECT loan_id,
@@ -92,6 +108,10 @@ FROM loan;
 
 **핵심 한 줄:** 조건을 결합할 때 NULL과 괄호, 경계 포함 여부를 확인한다.
 
+[강의 25:49 · WHERE와 패턴](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1549s)
+
+문자 그대로의 밑줄을 찾을 때는 이스케이프 문자를 정한다. 예를 들어 `code LIKE 'SQL!_%' ESCAPE '!'`는 SQL_01과 일치하고 SQLA01과는 일치하지 않는다. 밑줄 앞의 !가 없으면 밑줄은 임의의 한 글자다.
+
 `fee BETWEEN 120 AND 180`은 양 끝을 포함하여 ID 11·12·13을 남긴다. `fee IN (120, 300)`은 11·14를 남긴다. `reader LIKE '_온'`은 두 글자이며 끝이 ‘온’인 다온·라온에 해당한다. `%`는 0개 이상 문자, `_`는 한 문자 패턴이다.
 
 ```sql
@@ -111,6 +131,10 @@ ORDER BY loan_id;
 ## 6 집계와 그룹 필터
 
 **핵심 한 줄:** WHERE는 집계 전 행을, HAVING은 집계한 그룹을 제한한다.
+
+[강의 32:30 · GROUP BY와 HAVING](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1950s)
+
+조건이 어느 단위에 적용되는지 바꿔 읽어 보자. 지점 20의 대여료가 180과 300이면 WHERE fee >= 200 뒤의 합은 300이다. 두 행을 먼저 합한 뒤 HAVING SUM(fee) >= 400으로 거르면 합 480인 지점 20이 남는다.
 
 ```sql
 SELECT branch_id, COUNT(*) AS loans, SUM(fee) AS fee_sum
@@ -132,6 +156,10 @@ WHERE로 빈 집합을 만든 뒤 GROUP BY 없이 집계하면 COUNT(*)는 0, SU
 ## 7 정렬과 상위 N건
 
 **핵심 한 줄:** 정렬 기준과 동점 처리 규칙을 먼저 정한다.
+
+[강의 35:35 · 정렬과 동점](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2135s)
+
+대여료 내림차순에서 180이 두 행이라면 대여료만으로는 둘의 순서가 결정되지 않는다. 정확히 두 건을 고를 때와 공동 순위까지 고를 때의 답이 다르므로, 전자는 고유번호로 순서를 확정하고 후자는 동점 판단 기준을 유지한다.
 
 최종 ORDER BY가 없으면 출력 순서를 보장하지 않는다. 같은 대여료 사이의 순서가 중요하면 고유 ID 같은 추가 정렬 키를 둔다.
 
@@ -155,6 +183,10 @@ SQL Server는 `SELECT TOP (2) ... ORDER BY ...`를 사용할 수 있다. Oracle�
 
 **핵심 한 줄:** 조인은 행의 쌍을 만들기 때문에 한쪽 값이 반복되면 결과도 늘어난다.
 
+[강의 41:10 · 표준 조인](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2470s)
+
+양쪽 열 이름이 branch_id라면 JOIN branch USING (branch_id)로 연결할 수 있다. ON은 열 이름이 다르거나 추가 조건이 있을 때도 쓴다. NATURAL JOIN은 이름이 같은 열을 모두 조건에 넣으므로 나중에 동명 열이 추가되면 결과가 달라질 수 있다.
+
 ```sql
 SELECT b.branch_id, b.branch_name, l.loan_id
 FROM branch b
@@ -175,6 +207,10 @@ SELF JOIN은 같은 테이블에 서로 다른 별칭을 붙여 연결하는 방
 ## 9 서브쿼리로 질문 나누기
 
 **핵심 한 줄:** 하위 조회의 결과가 값 하나인지, 목록인지, 존재 여부인지 구분한다.
+
+[강의 45:30 · 서브쿼리와 뷰](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2730s)
+
+FROM 안의 SELECT를 인라인 뷰(Inline view)라고 한다. 지점별 합계를 먼저 구해 이름을 붙이면 바깥 SELECT가 그 합계를 일반 열처럼 걸러낼 수 있다. 스칼라 서브쿼리는 한 열과 최대 한 행을 기대한다. Oracle에서는 0행이면 NULL이고 여러 행이면 오류다.
 
 ```sql
 SELECT loan_id, fee
@@ -202,6 +238,10 @@ ORDER BY b.branch_id;
 
 **핵심 한 줄:** 집합 연산은 열 방향 연결이며 열 개수와 자료형 호환성을 확인한다.
 
+[강의 50:45 · 집합 연산](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=3045s)
+
+왼쪽 결과가 A, A, B이고 오른쪽이 A, C라면 UNION ALL은 다섯 행, UNION은 A·B·C 세 행이다. INTERSECT는 A를, 왼쪽 MINUS 오른쪽은 B를 남긴다. 최종 표시 순서가 필요하면 전체 결과에 ORDER BY를 적용한다.
+
 두 조회의 결과가 A=`[10,10,20]`, B=`[20,30]`이라고 하자.
 
 | 연산 | 결과의 값 또는 다중집합 |
@@ -221,6 +261,10 @@ ORDER BY b.branch_id;
 
 **핵심 한 줄:** 집계 결과의 NULL이 원래 값인지 소계를 나타내는지 구별한다.
 
+[강의 52:10 · 소계와 총계](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=3130s)
+
+ROLLUP(지점, 월)은 (지점, 월), (지점), () 수준을 만든다. CUBE는 여기에 지점 전체를 가로지르는 (월) 수준까지 더한다. GROUPING(월)이 1이면 월을 집계에서 제외한 소계 표시이고, 원본의 미입력 월과 구별할 수 있다.
+
 `GROUP BY ROLLUP(branch_id)`는 지점별 집계와 전체 총계를 만든다. 실습에서는 실제 NULL 지점 그룹과 전체 총계가 모두 나타날 수 있다.
 
 ```sql
@@ -239,6 +283,10 @@ ROLLUP(a,b)는 `(a,b)`, `(a)`, `()` 집계 수준을 만든다. CUBE(a,b)는 여
 ## 12 순위와 누적합
 
 **핵심 한 줄:** 윈도우 함수는 행을 유지하면서 관련 행들을 함께 계산한다.
+
+[강의 55:10 · 윈도우 함수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=3310s)
+
+점수 10·20·20을 오름차순으로 정렬하면 20인 각 행의 RANK는 2다. PERCENT_RANK는 (순위−1)/(행 수−1)이므로 0.5이고 CUME_DIST는 현재 값 이하인 행 수/전체 행 수이므로 1이다. NTILE은 정렬된 행을 지정한 수의 묶음으로 나누므로 동점도 갈라질 수 있다.
 
 FEE가 NULL인 행을 제외하고 내림차순으로 정렬하면 금액은 300·180·180·120이다.
 
@@ -271,6 +319,10 @@ ROWS는 행 위치 기준이며 RANGE는 정렬값의 동점 범위 등을 함�
 
 **핵심 한 줄:** 부모·자식 방향과 시작점을 먼저 정한다.
 
+[강의 69:10 · 계층형 질의](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4150s)
+
+직원 표의 manager_id가 같은 표의 employee_id를 참조한다고 하자. 자기 조인 한 번은 직원과 직속 상사를 짝짓는다. 최상위 상사까지 깊이를 모르면 계층형 질의나 재귀 질의로 부모 연결을 반복해서 따라간다.
+
 학습용 분류표 `CATEGORY(category_id, parent_id)`에서 최상위 행의 PARENT_ID는 NULL이라고 하자. Oracle 계층 조회 예시는 다음과 같다.
 
 ```sql
@@ -290,6 +342,10 @@ PRIOR가 붙은 CATEGORY_ID는 부모 행의 값이다. 자식의 PARENT_ID와 �
 
 **핵심 한 줄:** 피벗은 집계 구조 변환이고 정규식은 문자 패턴 처리다.
 
+[강의 71:20 · PIVOT과 UNPIVOT](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4280s)
+
+한 학생의 1차 점수 70·80을 MAX로 피벗하면 80만 남는다. 이를 다시 언피벗해도 70은 복원되지 않는다. 방향을 뒤집기 전에 집계 단계에서 정보가 합쳐졌는지 확인한다.
+
 두 지점의 대여료 합계를 한 행으로 만들려면 조건부 집계를 쓸 수 있다.
 
 ```sql
@@ -308,6 +364,10 @@ Oracle의 `REGEXP_LIKE(code, '^[A-Z]{2}[0-9]{3}$')`는 대문자 두 개와 숫�
 
 **핵심 한 줄:** 값을 바꾸기 전에 같은 조건의 SELECT로 대상 행을 확인한다.
 
+[강의 73:43 · DML](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4423s)
+
+INSERT에서 열 목록을 쓰면 값이 어느 열에 대응하는지 드러난다. 생략한 열에는 기본값이 있으면 기본값이 적용되고, 기본값이 없으면 일반적으로 NULL이 들어간다. NOT NULL을 위반하면 행이 저장되지 않는다.
+
 ```sql
 UPDATE loan
 SET late_fee = 0
@@ -325,6 +385,10 @@ MERGE는 소스와 대상의 매칭 조건에 따라 갱신·삽입 등을 결�
 ## 16 확정·취소와 격리 수준
 
 **핵심 한 줄:** 트랜잭션 경계를 알고 동시 실행에서 보이는 값을 구분한다.
+
+[강의 75:57 · TCL과 저장점](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4557s)
+
+대여료를 100에서 120으로 바꾸고 저장점 S를 만든 뒤 150으로 바꿨다고 하자. ROLLBACK TO S 직후 값은 120이고 아직 확정 전이다. 그 뒤 COMMIT하면 120이 확정된다.
 
 ```sql
 SAVEPOINT before_change;
@@ -347,6 +411,10 @@ Oracle은 문법적으로 유효한 DDL 실행 전에 암묵적으로 COMMIT하�
 
 **핵심 한 줄:** 자료형은 저장할 값의 종류, 제약은 허용할 상태를 정한다.
 
+[강의 79:10 · DDL과 제약조건](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4750s)
+
+행 일부만 지우려면 DELETE와 조건을 사용한다. TRUNCATE는 표의 전체 데이터를 비우고 구조를 남긴다. DROP TABLE은 표 정의까지 제거한다. 취소 가능 여부는 DBMS와 명령마다 다르므로 시험에서 지정한 환경을 확인한다.
+
 Oracle 예:
 
 ```sql
@@ -365,9 +433,13 @@ ALTER는 객체 구조 변경, DROP은 객체 제거, TRUNCATE는 테이블의 �
 
 참고: [Oracle CREATE TABLE](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-TABLE.html).
 
-## 18 권한과 실행 계획 읽기
+## 18 권한 부여와 회수
 
-**핵심 한 줄:** 실행할 수 있는 권한과 빠르게 실행되는 방법은 별개의 문제다.
+**핵심 한 줄:** 어떤 권한을 누구에게 전달했는지 따라가면 회수 뒤에도 사용할 수 있는 권한을 판단할 수 있다.
+
+[강의 83:15 · DCL과 권한 회수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4995s)
+
+Oracle에서 소유자가 A에게 객체의 SELECT 권한을 WITH GRANT OPTION으로 주고 A가 B에게 전달했다고 하자. 다른 부여 경로가 없다면 소유자가 A의 권한을 회수할 때 B도 그 경로의 권한을 잃는다. 시스템 권한의 WITH ADMIN OPTION은 A의 권한을 회수해도 이미 B에게 부여한 권한이 자동으로 회수되지 않는다.
 
 ```sql
 GRANT SELECT ON study_result TO study_reader;
@@ -376,11 +448,7 @@ REVOKE SELECT ON study_result FROM study_reader;
 
 Oracle 객체 권한의 예다. 사용자가 존재하며 명령 실행자가 권한을 부여할 수 있어야 한다. 역할을 통해 권한을 묶을 수 있지만 객체 소유권·직접 부여·역할의 동작은 구분한다.
 
-실행 계획은 데이터를 어떤 순서와 방식으로 접근·결합할지 보여준다. 통계와 데이터 분포가 달라지면 계획도 달라질 수 있다. 논리적으로 같은 결과의 두 SQL이 항상 같은 비용으로 실행되는 것은 아니다.
-
-인덱스 컬럼에 함수를 씌우면 일반 인덱스 활용이 어려워질 수 있으나 함수 기반 인덱스 등 예외가 있다. ‘인덱스가 있으면 반드시 사용한다’ 또는 ‘전체 스캔은 항상 나쁘다’ 같은 절대 규칙 대신 계획과 실제 측정을 확인한다.
-
-참고: [Oracle GRANT](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/GRANT.html), [실행 계획](https://docs.oracle.com/en/database/oracle/oracle-database/19/tgsql/generating-and-displaying-execution-plans.html).
+참고 자료 · [Oracle GRANT](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/GRANT.html) · [Oracle REVOKE](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/REVOKE.html)
 
 ## 확인문제
 

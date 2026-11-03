@@ -38,8 +38,13 @@ for n, name in [
             summary = re.search(r'\*\*핵심 한 줄:\*\* (.*)', body)
             plain = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', body)
             plain = re.sub(r'[#*`|>]', ' ', plain)
+            paragraphs = body.split('\n\n', 3)
+            lecture, detail = '', body
+            if len(paragraphs) == 4 and paragraphs[1].startswith('[강의 '):
+                lecture = render('\n\n'.join(paragraphs[1:3]))
+                detail = paragraphs[3]
             sections.append({'id': int(match[1]), 'title': match[2],
-                'summary': summary[1] if summary else '', 'html': render(body),
+                'summary': summary[1] if summary else '', 'html': render(detail), 'lecture': lecture,
                 'search': re.sub(r'\s+', ' ', plain), 'sourceChars': len(body)})
         elif title == '확인문제':
             questions = re.findall(r'^\d+\. (.+)$', body, flags=re.M)
