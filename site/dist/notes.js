@@ -52,6 +52,46 @@ const studyNotes = (() => {
     } catch { storageAvailable = false; }
     return storageAvailable;
   }
+  const panel = document.getElementById('lesson-note-dialog');
+  const dock = panel.querySelector('[data-dock]');
+  const grip = panel.querySelector('h2');
+  let position = {mode:'right', x:16, y:16};
+  try {
+    const old = JSON.parse(localStorage.getItem('sqld-panel-position'));
+    if (old && ['left','right','free'].includes(old.mode) && Number.isFinite(old.x) && Number.isFinite(old.y)) position = old;
+  } catch {}
+  function place() {
+    dock.value = panel.dataset.dock = position.mode;
+    if (position.mode === 'free' && !panel.hidden) {
+      panel.style.left = Math.max(0, Math.min(position.x, innerWidth - panel.offsetWidth)) + 'px';
+      panel.style.top = Math.max(0, Math.min(position.y, innerHeight - panel.offsetHeight)) + 'px';
+    } else {
+      panel.style.left = panel.style.top = '';
+    }
+  }
+  function rememberPosition() {
+    try { localStorage.setItem('sqld-panel-position', JSON.stringify(position)); } catch {}
+  }
+  dock.onchange = () => {
+    const rect = panel.getBoundingClientRect();
+    position = {mode:dock.value, x:rect.left, y:rect.top};
+    place();
+    rememberPosition();
+  };
+  let drag;
+  grip.onpointerdown = event => {
+    if (event.button !== 0 || !event.isPrimary) return;
+    const rect = panel.getBoundingClientRect();
+    drag = [event.clientX - rect.left, event.clientY - rect.top];
+    grip.setPointerCapture(event.pointerId);
+  };
+  grip.onpointermove = event => {
+    if (!drag || !event.isPrimary) return;
+    position = {mode:'free', x:event.clientX - drag[0], y:event.clientY - drag[1]};
+    place();
+  };
+  grip.onlostpointercapture = () => { drag = null; rememberPosition(); };
+  window.addEventListener('resize', place);
   function mountLesson(key) {
     const root = document.getElementById('personal-notes');
     if (!root || !units.has(key)) return;
@@ -62,6 +102,9 @@ const studyNotes = (() => {
     editor.value = notes[key] || '';
     const popup = document.getElementById('lesson-note-dialog');
     const opener = document.getElementById('open-lesson-note');
+    popup.querySelector('[data-note-unit]').textContent = '필기 단원 · ' + units.get(key);
+    opener.hidden = !popup.hidden;
+    opener.setAttribute('aria-expanded', String(!popup.hidden));
     const lecture = document.querySelector('.lesson-lecture a[href*="youtube.com/watch"]');
     const player = popup.querySelector('iframe');
     const external = popup.querySelector('[data-youtube]');
@@ -75,6 +118,7 @@ const studyNotes = (() => {
         external.href = url.href;
       }
       popup.hidden = false;
+      place();
       opener.hidden = true;
       opener.setAttribute('aria-expanded', 'true');
       editor.focus({preventScroll:true});
@@ -84,7 +128,7 @@ const studyNotes = (() => {
       popup.hidden = true;
       opener.hidden = false;
       opener.setAttribute('aria-expanded', 'false');
-      opener.focus({preventScroll:true});
+      if (opener.isConnected) opener.focus({preventScroll:true});
     }
     opener.onclick = () => openAlongside(lecture);
     document.querySelectorAll('.reading-paper.prose a[href^="https://www.youtube.com/watch"]').forEach(link => {
