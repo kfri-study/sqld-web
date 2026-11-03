@@ -19,8 +19,8 @@
 #lesson-note-dialog{position:fixed;z-index:31;inset:auto 1rem max(1rem,env(safe-area-inset-bottom)) auto;width:min(48rem,calc(100vw - 2rem));max-height:55dvh;overflow:auto;padding:1rem;border:1px solid #bdcde1;border-radius:12px;background:white;color:#172b4a;box-shadow:0 6px 24px #17365a33}
 .lecture-workbench{display:grid;grid-template-columns:1.2fr 1fr;gap:1rem}.lecture-workbench iframe{width:100%;aspect-ratio:16/9;border:0;background:#172b4a}.lecture-workbench a{font-size:.85rem}.lecture-workbench textarea{max-height:18dvh}
 .note-popup-head{display:flex;align-items:center;justify-content:space-between}.note-popup-head h2{margin:0;font-size:1.1rem}.note-popup-head button{background:white;border:1px solid #adbed3;border-radius:6px;padding:.35rem .75rem}#note-panel-body>p{color:#536580;margin:.35rem 0}
-.floating-note[hidden],#lesson-note-dialog[hidden]{display:none}body:has(#lesson-note-dialog:not([hidden]):not(.folded)) main{padding-bottom:55dvh}
-@media(max-width:700px){#lesson-note-dialog{inset:auto 0 0;width:100%;max-height:60dvh;padding:.65rem 1rem}.lecture-workbench{display:block}.lecture-workbench iframe{height:min(19dvh,48vw)}.lecture-workbench textarea{height:5em}.lecture-workbench .note-status{margin:0}body:has(#lesson-note-dialog:not([hidden]):not(.folded)) main{padding-bottom:60dvh}}
+.floating-note[hidden],#lesson-note-dialog[hidden]{display:none}body:has(#lesson-note-dialog:not([hidden])) main{padding-bottom:55dvh}
+@media(max-width:700px){#lesson-note-dialog{inset:auto 0 0;width:100%;max-height:60dvh;padding:.65rem 1rem}.lecture-workbench{display:block}.lecture-workbench iframe{height:min(19dvh,48vw)}.lecture-workbench textarea{height:5em}.lecture-workbench .note-status{margin:0}body:has(#lesson-note-dialog:not([hidden])) main{padding-bottom:60dvh}}
 @media print{.floating-note,#lesson-note-dialog{display:none}}
 
 #lesson-note-dialog[data-dock="left"]{left:0.75rem;right:auto}
@@ -30,4 +30,9 @@
 .note-popup-head{gap:.5rem;flex-wrap:wrap}.note-popup-head label{margin-left:auto;font-size:.85rem}
 @media(max-width:700px){#lesson-note-dialog[data-dock="left"]{left:0}#lesson-note-dialog{width:min(100%,32rem)}}
 
-#lesson-note-dialog.folded{width:max-content;max-width:100%;padding:.5rem .75rem}.folded .note-popup-head label{display:none}
+
+@media screen and (min-width:701px){
+  #menu-button{display:inline-flex;align-items:center;width:auto;padding:0 .75rem;white-space:nowrap;font-size:13px}
+  .toc-collapsed .sidebar{display:none}
+  .toc-collapsed .workspace{margin-left:0}
+}

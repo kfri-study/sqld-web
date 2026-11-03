@@ -130,9 +130,32 @@
     if(route.map&&maps.some(m=>m.slug===route.map)){requestAnimationFrame(()=>document.getElementById(`map-${route.map}`)?.scrollIntoView({block:'start'}));}
   }
   const mobileQuery=window.matchMedia('(max-width:700px)');
-  function closeMenu(){$('#sidebar').classList.remove('open');$('#shade').classList.remove('open');$('#menu-button').setAttribute('aria-expanded','false');$('#sidebar').inert=mobileQuery.matches;}
-  mobileQuery.addEventListener('change',closeMenu);
-  $('#menu-button').addEventListener('click',()=>{const open=$('#sidebar').classList.toggle('open');$('#sidebar').inert=!open&&mobileQuery.matches;$('#shade').classList.toggle('open',open);$('#menu-button').setAttribute('aria-expanded',String(open));});
+  let tocCollapsed = false;
+  try { tocCollapsed = localStorage.getItem('sqld-toc-collapsed') === 'true'; } catch {}
+  function updateMenu(mobileOpen = false) {
+    const mobile = mobileQuery.matches;
+    const visible = mobile ? mobileOpen : !tocCollapsed;
+    const label = visible ? '목차 접기' : '목차 펼치기';
+    document.body.classList.toggle('toc-collapsed', !mobile && tocCollapsed);
+    $('#sidebar').classList.toggle('open', mobile && visible);
+    $('#shade').classList.toggle('open', mobile && visible);
+    $('#sidebar').inert = !visible;
+    const toggle = $('#menu-button');
+    toggle.setAttribute('aria-expanded', String(visible));
+    toggle.setAttribute('aria-label', label);
+    toggle.textContent = mobile ? '☰' : label;
+  }
+  function closeMenu() { updateMenu(false); }
+  mobileQuery.addEventListener('change', closeMenu);
+  $('#menu-button').addEventListener('click', () => {
+    if (mobileQuery.matches) {
+      updateMenu(!$('#sidebar').classList.contains('open'));
+      return;
+    }
+    tocCollapsed = !tocCollapsed;
+    try { localStorage.setItem('sqld-toc-collapsed', String(tocCollapsed)); } catch {}
+    updateMenu();
+  });
   $('#shade').addEventListener('click',closeMenu);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
   document.addEventListener('click',e=>{
