@@ -69,6 +69,16 @@ const studyNotes = (() => {
       panel.style.left = panel.style.top = '';
     }
   }
+  const foldButton = panel.querySelector('[data-fold]');
+  const panelBody = panel.querySelector('#note-panel-body');
+  function setFolded(folded) {
+    panelBody.hidden = folded;
+    panel.classList.toggle('folded', folded);
+    foldButton.textContent = folded ? '펼치기' : '접기';
+    foldButton.setAttribute('aria-expanded', String(!folded));
+    place();
+  }
+  foldButton.onclick = () => setFolded(!panelBody.hidden);
   function rememberPosition() {
     try { localStorage.setItem('sqld-panel-position', JSON.stringify(position)); } catch {}
   }
@@ -118,7 +128,7 @@ const studyNotes = (() => {
         external.href = url.href;
       }
       popup.hidden = false;
-      place();
+      setFolded(false);
       opener.hidden = true;
       opener.setAttribute('aria-expanded', 'true');
       editor.focus({preventScroll:true});
