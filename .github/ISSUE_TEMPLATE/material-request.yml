@@ -1,0 +1,22 @@
+name: 새 자료 요청
+description: 추가할 학습자료나 예제를 제안합니다.
+title: "[자료 요청] "
+body:
+  - type: input
+    id: subject
+    attributes:
+      label: 과목 또는 주제
+    validations:
+      required: true
+  - type: textarea
+    id: request
+    attributes:
+      label: 필요한 내용
+      description: 어떤 개념이나 예제가 필요한지 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: 참고 자료
+      description: 자료 링크와 관련 구간 또는 페이지를 적어주세요.

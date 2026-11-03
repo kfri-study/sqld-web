@@ -1,0 +1,25 @@
+name: 학습 내용 오류 제보
+description: 잘못되거나 이해하기 어려운 설명을 알려주세요.
+title: "[내용 수정] "
+body:
+  - type: input
+    id: location
+    attributes:
+      label: 과목과 단원 또는 문제 번호
+      placeholder: "예: 2과목 12단원 윈도우 함수"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: 확인할 설명
+      description: 현재 내용 중 어떤 부분을 확인해야 하는지 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 수정 제안과 근거
+      description: 공식 문서나 참고 강의의 링크가 있으면 함께 적어주세요.
+    validations:
+      required: true

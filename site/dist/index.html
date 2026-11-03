@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244d85">
+  <meta name="description" content="직접 작성한 개념 설명과 예제로 배우는 SQLD 1·2과목 학습 노트. 28개 단원과 34개 복습문제로 개념을 확인하세요.">
+  <title>SQLD 학습 노트</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Noto+Serif+KR:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="diagram.css">
+  <script src="content.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <div class="mobile-shade" id="shade"></div>
+  <aside class="sidebar" id="sidebar" aria-label="학습 탐색">
+    <a class="brand" href="#/home" aria-label="SQLD 학습 노트 홈"><span class="brand-mark">S<span>_</span></span><span>SQLD<span class="brand-sub">학습 노트</span></span></a>
+    <div class="sidebar-label">MY STUDY SPACE</div>
+    <nav id="primary-nav" aria-label="주 메뉴">
+      <a class="nav-item" href="#/home" data-nav="home"><span class="nav-symbol">⌂</span>학습 홈</a>
+      <a class="nav-item" href="#/maps" data-nav="maps"><span class="nav-symbol">⊞</span>개념 지도</a>
+      <a class="nav-item" href="#/saved" data-nav="saved"><span class="nav-symbol">☆</span>저장한 단원<span class="nav-count" id="saved-count">0</span></a>
+    </nav>
+    <div class="sidebar-rule"></div>
+    <nav id="course-nav" aria-label="과목별 목차"></nav>
+    <div class="sidebar-bottom"><div class="storage-dot"></div><p>나의 진도는 이 브라우저에 저장돼요.<br><span id="storage-state">로그인 없이 이어서 공부하세요.</span></p></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <button class="icon-button mobile-menu" id="menu-button" aria-label="목차 열기" aria-expanded="false">☰</button>
+      <div class="top-breadcrumb" id="top-breadcrumb">나의 학습 공간</div>
+      <button class="search-trigger" id="search-trigger"><span aria-hidden="true">⌕</span><span>개념 검색</span><kbd>Ctrl K</kbd></button>
+      <span class="edition">공개 학습 노트</span>
+    </header>
+    <main id="main" tabindex="-1"></main>
+    <footer class="footer"><span>SQLD 학습 노트</span><span>이해하고, 풀어보고, 다시 확인하기.</span></footer>
+  </div>
+  <dialog id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head"><span id="search-title">개념 검색</span><button class="icon-button" id="search-close" aria-label="검색 닫기">×</button></div>
+    <label class="search-field"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="정규화, NULL, JOIN…" autocomplete="off" aria-label="검색어"></label>
+    <div class="search-help" id="search-help">두 과목의 제목과 본문에서 찾아요.</div>
+    <div class="search-results" id="search-results"></div>
+  </dialog>
+  <div class="toast" role="status" id="toast"></div>
+  <noscript><p class="no-script">이 학습 도구는 JavaScript를 사용합니다. 원문은 <a href="downloads/sqld-course-1.md">1과목 자료</a>와 <a href="downloads/sqld-course-2.md">2과목 자료</a>에서 내려받을 수 있어요.</p></noscript>
+</body>
+</html>
