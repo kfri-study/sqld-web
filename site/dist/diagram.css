@@ -1,7 +1,7 @@
 .diagram-canvas{width:100%;overflow-x:auto;background:#f4f7fc}
 .diagram-canvas svg{width:100%;min-width:960px;display:block}
 .diagram-canvas .edge{fill:none;stroke:#536580;stroke-width:1.2}
-.diagram-canvas .arrow{marker-end:url(#sql-order-arrow)}
+
 .diagram-canvas .name{font:600 14px 'Geist','Noto Sans KR',sans-serif;fill:#172b4a}
 .diagram-canvas .field,.diagram-canvas .label{font:500 12px 'Geist','Noto Sans KR',sans-serif;fill:#536580}
 .diagram-canvas .tag{font:500 9px 'Geist Mono',monospace;fill:#536580;letter-spacing:.08em}
