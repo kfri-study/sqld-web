@@ -38,13 +38,17 @@ for n, name in [
             summary = re.search(r'\*\*핵심 한 줄:\*\* (.*)', body)
             plain = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', body)
             plain = re.sub(r'[#*`|>]', ' ', plain)
+            exam_note = re.search(r'^### 강사가 짚은 시험 포인트\n\n(.*?)(?=^\[강의 )', body, re.M | re.S)
+            exam_html = render(exam_note[1]) if exam_note else ''
+            if exam_note:
+                body = body[:exam_note.start()] + body[exam_note.end():]
             paragraphs = body.split('\n\n', 3)
             lecture, detail = '', body
             if len(paragraphs) == 4 and paragraphs[1].startswith('[강의 '):
                 lecture = render('\n\n'.join(paragraphs[1:3]))
                 detail = paragraphs[3]
             sections.append({'id': int(match[1]), 'title': match[2],
-                'summary': summary[1] if summary else '', 'html': render(detail), 'lecture': lecture,
+                'summary': summary[1] if summary else '', 'html': render(detail), 'lecture': lecture, 'examNote': exam_html,
                 'search': re.sub(r'\s+', ' ', plain), 'sourceChars': len(body)})
         elif title == '확인문제':
             questions = re.findall(r'^\d+\. (.+)$', body, flags=re.M)

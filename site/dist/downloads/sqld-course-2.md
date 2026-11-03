@@ -8,6 +8,16 @@
 
 **핵심 한 줄:** 조회·데이터 변경·구조 변경·권한·확정은 서로 다른 작업이다.
 
+### 강사가 짚은 시험 포인트
+
+**SQL 명령의 분류** · [강의 02:46](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=166s)
+
+강사는 명령을 보고 역할을 구별하는 연습을 강조한다. 행을 지우는 DELETE는 DML, 표 자체를 지우는 DROP은 DDL, 권한을 주는 GRANT는 DCL이다.
+
+**관계대수 복습 순서** · [강의 06:20](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=380s)
+
+강사는 관계대수를 낮은 빈도로 언급하며 SQL을 익힌 뒤 복습하라고 한다. 셀렉션은 행을, 프로젝션은 열을 고른다.
+
 [강의 04:46 · 관계대수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=286s)
 
 행 선택(Selection)은 조건을 만족하는 행을 남기고, 열 선택(Projection)은 필요한 속성만 남긴다. 두 행과 세 행을 조건 없이 곱하면 여섯 조합이다. 그중 두 키가 일치하는 조합만 남기는 것이 등가 조인을 이해하는 출발점이다.
@@ -62,6 +72,12 @@ ORDER BY fee DESC, loan_id;
 
 **핵심 한 줄:** SQL 조건은 TRUE·FALSE 외에 UNKNOWN이 될 수 있다.
 
+### 강사가 짚은 시험 포인트
+
+**NULL 판정** · [강의 32:08](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1928s)
+
+강사가 문제로 만들기 좋은 차이로 짚는다. WHERE fee = NULL은 문법 오류가 아니라 비교 결과가 UNKNOWN이어서 행을 남기지 않는다. 미입력 값을 찾으려면 IS NULL을 쓴다.
+
 [강의 23:01 · NULL 처리 함수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1381s)
 
 COALESCE(NULL, 0, 7)의 결과는 0이다. 왼쪽부터 처음 만나는 NULL 아닌 값을 택하기 때문이다. NULLIF(0, 0)은 두 값이 같으므로 NULL이다. 0을 유효한 값으로 보존할지부터 정한 뒤 함수를 고른다.
@@ -107,6 +123,12 @@ FROM loan;
 ## 5 행 필터를 정확히 쓰기
 
 **핵심 한 줄:** 조건을 결합할 때 NULL과 괄호, 경계 포함 여부를 확인한다.
+
+### 강사가 짚은 시험 포인트
+
+**조건식의 우선순위** · [강의 32:28](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1948s)
+
+강사는 조건을 어떤 순서로 해석하는지 물을 수 있다고 설명한다. 논리 연산자는 NOT, AND, OR 순으로 계산한다. A OR B AND C는 A OR (B AND C)다.
 
 [강의 25:49 · WHERE와 패턴](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1549s)
 
@@ -156,6 +178,12 @@ WHERE로 빈 집합을 만든 뒤 GROUP BY 없이 집계하면 COUNT(*)는 0, SU
 ## 7 정렬과 상위 N건
 
 **핵심 한 줄:** 정렬 기준과 동점 처리 규칙을 먼저 정한다.
+
+### 강사가 짚은 시험 포인트
+
+**NULL 기본 정렬** · [강의 38:32](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2312s)
+
+강사가 Oracle과 SQL Server의 차이를 짚은 부분이다. 기본 오름차순에서 Oracle은 NULL을 마지막에, SQL Server는 처음에 놓는다. 내림차순이면 각각 반대다.
 
 [강의 35:35 · 정렬과 동점](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2135s)
 
@@ -207,6 +235,12 @@ SELF JOIN은 같은 테이블에 서로 다른 별칭을 붙여 연결하는 방
 ## 9 서브쿼리로 질문 나누기
 
 **핵심 한 줄:** 하위 조회의 결과가 값 하나인지, 목록인지, 존재 여부인지 구분한다.
+
+### 강사가 짚은 시험 포인트
+
+**뷰의 장점** · [강의 50:51](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=3051s)
+
+강사는 뷰의 장점을 출제 포인트로 언급한다. 반복되는 조회를 이름으로 재사용하고, 필요한 열만 공개할 수 있다. 행을 따로 저장하거나 실행 속도가 항상 빨라진다는 뜻은 아니다.
 
 [강의 45:30 · 서브쿼리와 뷰](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2730s)
 
@@ -341,6 +375,12 @@ PRIOR가 붙은 CATEGORY_ID는 부모 행의 값이다. 자식의 PARENT_ID와 �
 ## 14 행·열 변환과 문자열 패턴
 
 **핵심 한 줄:** 피벗은 집계 구조 변환이고 정규식은 문자 패턴 처리다.
+
+### 강사가 짚은 시험 포인트
+
+**정규표현식 공부 범위** · [강의 73:17](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4397s)
+
+강사는 대표 패턴을 먼저 익히라고 한다. ^는 시작, $는 끝, [0-9]는 숫자 한 자리다. ^[0-9]+$는 처음부터 끝까지 숫자가 하나 이상인 문자열에 맞는다.
 
 [강의 71:20 · PIVOT과 UNPIVOT](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4280s)
 
