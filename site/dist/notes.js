@@ -58,10 +58,12 @@ const studyNotes = (() => {
   let position = {mode:'right', x:16, y:16};
   try {
     const old = JSON.parse(localStorage.getItem('sqld-panel-position'));
-    if (old && ['left','right','free'].includes(old.mode) && Number.isFinite(old.x) && Number.isFinite(old.y)) position = old;
+    if (old && ['left','center','right','free'].includes(old.mode) && Number.isFinite(old.x) && Number.isFinite(old.y)) position = old;
   } catch {}
   function place() {
     dock.value = panel.dataset.dock = position.mode;
+    panel.querySelector('[data-dock-step="-1"]').disabled = position.mode === 'left';
+    panel.querySelector('[data-dock-step="1"]').disabled = position.mode === 'right';
     if (position.mode === 'free' && !panel.hidden) {
       panel.style.left = Math.max(0, Math.min(position.x, innerWidth - panel.offsetWidth)) + 'px';
       panel.style.top = Math.max(0, Math.min(position.y, innerHeight - panel.offsetHeight)) + 'px';
@@ -78,6 +80,14 @@ const studyNotes = (() => {
     place();
     rememberPosition();
   };
+  for (const arrow of panel.querySelectorAll('[data-dock-step]')) {
+    arrow.onclick = () => {
+      const stops = ['left', 'center', 'right'];
+      const current = position.mode === 'free' ? 1 : stops.indexOf(position.mode);
+      dock.value = stops[Math.max(0, Math.min(2, current + Number(arrow.dataset.dockStep)))];
+      dock.onchange();
+    };
+  }
   let drag;
   grip.onpointerdown = event => {
     if (event.button !== 0 || !event.isPrimary) return;
