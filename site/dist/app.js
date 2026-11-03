@@ -70,6 +70,18 @@
   }
   const maps=[{slug:'pk-fk',title:'학생 한 명과 여러 수강 기록',subtitle:'1과목 · 기본키와 외래키',course:1,lesson:4},{slug:'student-model',title:'학생과 과목을 연결하는 수강',subtitle:'1과목 · 관계와 교차 엔터티',course:1,lesson:5},{slug:'normalization',title:'정규화로 정보를 나누기',subtitle:'1과목 · 부분 종속과 이행 종속',course:1,lesson:7},{slug:'sql-order',title:'SQL의 논리적 해석 순서',subtitle:'2과목 · 작성 순서와 해석 순서',course:2,lesson:2}];
   function mapsPage() {return `<header class="page-head"><p class="eyebrow">CONCEPT MAPS</p><h1>흐름이 보이면, 이해가 쉬워져요.</h1><p class="sub">외우기 전에 관계와 순서를 한눈에 살펴보세요.<br>좁은 화면에서는 그림 안을 가로로 움직여 전체를 볼 수 있어요.</p></header><div class="diagram-grid">${maps.map(m=>`<section class="diagram-card" id="map-${m.slug}"><div class="diagram-card-head"><div><h2>${m.title}</h2><p>${m.subtitle}</p></div><a href="diagrams/${m.slug}.html" target="_blank" rel="noopener noreferrer">크게 보기 ↗</a></div><div class="diagram-canvas" tabindex="0" role="region" aria-label="${m.title} 가로 스크롤">${window.STUDY_DIAGRAMS[m.slug]}</div><div class="diagram-card-footer"><a href="${lessonURL(m.course,m.lesson)}">이 개념의 학습자료 읽기 →</a></div></section>`).join('')}</div>`;}
+  function termsPage() {
+    const sections = courses.map(course => {
+      const entries = course.sections.map(section => {
+        const terms = section.terms.map(([ko, en, meaning]) =>
+          `<dt><b>${esc(ko)}</b> · <span lang="en">${esc(en)}</span></dt><dd>${esc(meaning)}</dd>`
+        ).join('');
+        return `<h3><a href="${lessonURL(course.id, section.id)}">${section.id}. ${esc(section.title)} ↗</a></h3><dl>${terms}</dl>`;
+      }).join('');
+      return `<section class="reading-paper prose"><h2>${course.id}과목 · ${esc(course.title)}</h2>${entries}</section>`;
+    }).join('');
+    return `<header class="page-head"><h1>용어 정리</h1><p>단원 이름을 누르면 해당 예제로 이동해요.</p></header>${sections}`;
+  }
   function basicsPage(){
     const all=window.STUDY_BASICS,i=Number.isInteger(route.course)&&route.course>=1&&route.course<=all.length?route.course:1;
     return `<header class="page-head"><p class="eyebrow">BACKGROUND READING</p><h1>추가 개념</h1><p class="sub">SQL을 처음 접할 때 읽는 배경지식이에요. 과목별 진도에는 포함되지 않아요.</p></header><nav class="basics-topics" aria-label="추가 개념 목차">${all.map((t,n)=>`<a href="#/basics/${n+1}" ${n+1===i?'aria-current="page"':''}>${n+1}. ${esc(t.title)}</a>`).join('')}</nav><article class="reading-paper prose"><h2>${esc(all[i-1].title)}</h2>${all[i-1].html}${i===2?`<div class="diagram-canvas" tabindex="0">${window.STUDY_DIAGRAMS['dbms-flow']}</div>`:''}</article>`;
@@ -99,6 +111,7 @@
     else if(route.view==='course'&&c){out=coursePage(c);title=`${c.id}과목 · ${c.title}`;}
     else if(route.view==='lesson'&&c&&c.sections[route.section-1]){out=lessonPage(c,c.sections[route.section-1]);title=`${c.id}과목 · ${c.sections[route.section-1].title}`;}
     else if(route.view==='quiz'&&c){out=quizPage(c);title=`${c.id}과목 복습문제`;}
+    else if(route.view==='terms'){out=termsPage();title='용어 정리';}
     else if(route.view==='maps'){out=mapsPage();title='개념 지도';}
     else if(route.view==='basics'){out=basicsPage();title='추가 개념';}
     else if(route.view==='saved'){out=savedPage();title='저장한 단원';}
