@@ -14,3 +14,8 @@
 .video-list{border-top:1px solid #cad7e6}.video-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem .5rem;border-bottom:1px solid #cad7e6}.video-row a{color:#244d85;font-weight:700}.video-row label{cursor:pointer}.video-row input{accent-color:#315f9e}
 .exam-note{padding:1rem 1.25rem;background:#edf4fd;border-left:4px solid #315f9e;border-radius:4px}.exam-note h2:first-child{margin-top:0}
 #personal-notes textarea,#backup-settings select{display:block;width:100%;padding:.75rem;margin:.4rem 0 1rem;border:1px solid #adbed3;border-radius:6px;font:inherit;background:white;color:#172b4a}#personal-notes textarea{resize:vertical}.note-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.7rem 0}.note-actions button{cursor:pointer;padding:.55rem .8rem;border:1px solid #adbed3;border-radius:6px;background:#edf4fd;color:#244d85}.note-status{color:#455975;font-size:.9rem}
+
+.floating-note{position:fixed;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));z-index:30;box-shadow:0 3px 14px #17365a33;border:0;border-radius:2rem}
+#lesson-note-dialog{position:fixed;inset:auto 1rem max(1rem,env(safe-area-inset-bottom)) auto;margin:0;width:min(26rem,calc(100vw - 2rem));max-height:85dvh;overflow:auto;padding:1.25rem;border:1px solid #bdcde1;border-radius:12px;background:white;color:#172b4a}
+#lesson-note-dialog::backdrop{background:#172b4a33}.note-popup-head{display:flex;align-items:center;justify-content:space-between}.note-popup-head h2{margin:0}.note-popup-head button{background:white;border:1px solid #adbed3;border-radius:6px;padding:.35rem .75rem}#lesson-note-dialog>p{color:#536580;margin:.55rem 0}
+@media print{.floating-note,#lesson-note-dialog{display:none}}

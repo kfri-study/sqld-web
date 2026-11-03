@@ -60,6 +60,14 @@ const studyNotes = (() => {
     const editor = root.querySelector('textarea');
     const status = root.querySelector('[role=status]');
     editor.value = notes[key] || '';
+    const popup = document.getElementById('lesson-note-dialog');
+    const opener = document.getElementById('open-lesson-note');
+    opener.onclick = () => {
+      popup.showModal();
+      editor.focus({preventScroll:true});
+    };
+    popup.querySelector('[data-close-note]').onclick = () => popup.close();
+    popup.onclose = () => opener.focus({preventScroll:true});
     status.textContent = storageAvailable ? '입력하면 이 브라우저에 자동 저장돼요.' : '브라우저 저장이 제한돼요. 설정에서 파일로 백업해 주세요.';
     editor.oninput = () => {
       if (editor.value) notes[key] = editor.value;
