@@ -161,6 +161,7 @@ const studyNotes = (() => {
     }
     opener.onclick = () => openAlongside(lecture);
     document.querySelectorAll('.reading-paper.prose a[href^="https://www.youtube.com/watch"]').forEach(link => {
+      if (link.closest('[data-board-video]')) return;
       link.onclick = event => {
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         event.preventDefault();

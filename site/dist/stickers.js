@@ -16,6 +16,7 @@ const lessonStickers = (() => {
   function mount(unit, editor, button, status) {
     const page = document.querySelector('.reading-layout');
     const anchors = [...page.querySelectorAll('.reading-head, .reading-paper h2, .reading-paper h3, .reading-paper p, .reading-paper ul, .reading-paper ol, .reading-paper table, .reading-paper dl, .reading-paper pre, .diagram-canvas, .reading-bottom')];
+    anchors.push(...page.querySelectorAll('.moment'));
     function draw(s) {
       const note = document.createElement('aside');
       note.className = 'study-sticker';
@@ -53,6 +54,7 @@ const lessonStickers = (() => {
       e.stopImmediatePropagation();
       const distance = el => {
         const r = el.getBoundingClientRect();
+        if (!r.height) return Infinity;
         return Math.max(r.top-e.clientY, e.clientY-r.bottom, 0);
       };
       const anchor = anchors.reduce((best,el,i) => distance(el)<distance(anchors[best]) ? i : best,0);
