@@ -83,6 +83,51 @@
     return `<header class="page-head"><a href="#/course/${c.id}">← ${c.id}과목 목차</a><h1>${c.id}과목 강의 시간표</h1><p>듣고 있는 시각을 누르면 해당 단원의 설명으로 이동해요.</p></header>
     <article class="reading-paper schedule-list">${lectureTracks[c.id-1].map(([unit,title,rows])=>`<section><h2>${esc(title)}</h2>${rows.map(([time,label,,exam])=>`<a id="schedule-${seconds(time)}" href="${lessonURL(c.id,unit)}/${seconds(time)}" data-schedule-time="${seconds(time)}"><time>${time}</time><span>${esc(label)}${exam?' <small>시험 언급</small>':''}</span><span aria-hidden="true">→</span></a>`).join('')}</section>`).join('')}</article>`;
   }
+  function flowPlayer(key) {
+    const steps = lectureFlows[key];
+    if (!steps) return '';
+    return `<div class="flow-player" data-flow="${key}" role="group" aria-label="단계별 흐름 재생">
+      <small>움직이는 예제 · 자체 제작</small>
+      <div class="flow-stops">${steps.map(([label], i) => `<span ${i===0?'aria-current="step"':''}>${esc(label)}</span>`).join('')}</div>
+      <div class="flow-caption" aria-live="polite">${esc(steps[0][1])}</div>
+      <div class="flow-controls"><button type="button" data-play>▶ 흐름 재생</button><button type="button" data-prev disabled aria-label="이전 단계">←</button><output>1 / ${steps.length}</output><button type="button" data-next aria-label="다음 단계">→</button></div></div>`;
+  }
+  let stopActiveFlow;
+  function bindFlow(root) {
+    const steps = lectureFlows[root.dataset.flow];
+    const stops = [...root.querySelectorAll('.flow-stops span')];
+    const play = root.querySelector('[data-play]');
+    const prev = root.querySelector('[data-prev]');
+    const next = root.querySelector('[data-next]');
+    let i = 0, timer;
+    function paint() {
+      stops.forEach((stop, index) => index===i ? stop.setAttribute('aria-current','step') : stop.removeAttribute('aria-current'));
+      root.querySelector('.flow-caption').textContent = steps[i][1];
+      root.querySelector('output').textContent = (i+1)+' / '+steps.length;
+      prev.disabled = i===0;
+      next.disabled = i===steps.length-1;
+      play.textContent = timer ? 'Ⅱ 일시정지' : next.disabled ? '↺ 다시 재생' : i ? '▶ 이어서 재생' : '▶ 흐름 재생';
+    }
+    function stop() {
+      clearInterval(timer); timer = null;
+      if (stopActiveFlow===stop) stopActiveFlow=null;
+      paint();
+    }
+    function advance() {
+      i++;
+      if (i===steps.length-1) stop(); else paint();
+    }
+    play.onclick = () => {
+      if (timer) { stop(); return; }
+      stopActiveFlow?.();
+      if (next.disabled) i=0;
+      stopActiveFlow=stop;
+      timer=setInterval(advance, 3600);
+      paint();
+    };
+    prev.onclick = () => { stop(); i--; paint(); };
+    next.onclick = () => { stop(); advance(); };
+  }
   function lectureReader(c, unit) {
     const video = c.id === 1 ? 'e_AIZkWJNqA' : 'Rv4Q4ZrPS94';
     const chapters = lectureTracks[c.id - 1];
@@ -90,7 +135,7 @@
     function moment([time, title, explanation, exam, board, sketch]) {
       return `<div class="moment" id="moment-${seconds(time)}"><div><a href="${url(time)}" aria-label="${esc(title)} 강의 ${time}부터 보기">▶ ${time}</a> <strong>${esc(title)}</strong>
         <div class="moment-copy">${esc(explanation)}</div>${c.id === 2 && time === '32:08' ? '<div class="track-ref">문법 보충 · 일반 비교의 결과가 UNKNOWN이라는 설명은 <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Nulls.html">Oracle 19c NULL 공식 문서</a> 기준입니다.</div>' : ''}${exam ? `<div class="teacher-emphasis"><b>강사의 시험 언급 · ${time}</b><br>${esc(exam)}</div>` : ''}</div>
-        ${board ? `<aside class="moment-board">${sketch ? `<figure><figcaption>화면 개념을 다시 그린 도식 · ${board}</figcaption>${sketch.split('|').map(line=>`<div>${line.split(' → ').map(esc).join(' <b aria-hidden="true">→</b> ')}</div>`).join('')}</figure>` : ''}
+        ${flowPlayer(c.id+'-'+time)}${board ? `<aside class="moment-board">${sketch ? `<figure><figcaption>화면 개념을 다시 그린 도식 · ${board}</figcaption>${sketch.split('|').map(line=>`<div>${line.split(' → ').map(esc).join(' <b aria-hidden="true">→</b> ')}</div>`).join('')}</figure>` : ''}
         <details data-board-video="${video}" data-board-start="${seconds(board)}"><summary>원본 판서 보기 · ${board}</summary><a target="_blank" rel="noopener" href="${url(board)}">YouTube에서 이 장면 열기 ↗</a></details></aside>` : ''}</div>`;
     }
     return `<section class="lecture-reader"><div class="track-title">1. 강의를 따라 읽기</div><small class="origin-tag">아답터 · SQLD ${c.id}과목</small>
@@ -179,8 +224,10 @@
     else if(route.view==='basics'){out=basicsPage();title='추가 개념';}
     else if(route.view==='saved'){out=savedPage();title='저장한 단원';}
     else {out=`<div class="empty-state"><p>찾는 학습 페이지가 없어요.</p>${button('#/home','학습 홈으로')}</div>`;title='페이지를 찾을 수 없어요';}
+    stopActiveFlow?.();
     $('#main').innerHTML=out;$('#top-breadcrumb').textContent=title;document.title=`${title} | SQLD 학습 노트`;sidebar();decorate();
     updateReadingPosition();
+    document.querySelectorAll('[data-flow]').forEach(bindFlow);
     for (const board of document.querySelectorAll('[data-board-video]')) {
       board.ontoggle = () => {
         if (!board.open) { board.querySelector('iframe')?.remove(); return; }
