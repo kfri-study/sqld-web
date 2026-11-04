@@ -26,6 +26,10 @@
 
 관계대수에서 셀렉션은 행, 프로젝션은 열을 고른다. 카티션 곱은 두 입력의 모든 행 조합을 만들고 조인은 조건에 맞는 조합을 연결한다. SQL 문장은 조회·변경, 구조 정의, 트랜잭션, 권한 중 무엇을 다루는지로 구별한다.
 
+**강의에서 사용하는 DBMS** · [강의 01:22](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=82s)
+
+강사는 시험 준비에서 Oracle과 SQL Server의 차이를 살피라고 설명한다. 앞쪽 판서의 사용자 → DBMS → DB 흐름에서 DB는 저장된 데이터, DBMS는 요청을 받아 그 데이터를 읽고 바꾸는 프로그램이다. 예제에 제품명이 주어지면 해당 제품 문법으로 읽는다.
+
 | 분류 | 목적 | 예 |
 |---|---|---|
 | 조회 및 데이터 조작 | 값을 읽거나 행을 바꿈 | SELECT, INSERT, UPDATE, DELETE, MERGE |
@@ -153,6 +157,10 @@ FROM loan;
 ### 강의 개념 정리
 
 BETWEEN은 양쪽 경계를 포함한다. LIKE에서 %는 0개 이상의 문자, _는 정확히 한 문자다. AND가 OR보다 먼저 적용되므로 원하는 묶음은 괄호로 나타낸다.
+
+**시험 시작 때 떠올릴 여섯 글자** · [강의 26:06](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1566s)
+
+강사가 판서한 FWGHSO는 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY다. 표에서 조건을 만족하는 행을 먼저 남긴 뒤 출력할 열을 고르는 순서로 따라간다. G는 그룹을 만드는 GROUP BY다.
 
 `fee BETWEEN 120 AND 180`은 양 끝을 포함하여 ID 11·12·13을 남긴다. `fee IN (120, 300)`은 11·14를 남긴다. `reader LIKE '_온'`은 두 글자이며 끝이 ‘온’인 다온·라온에 해당한다. `%`는 0개 이상 문자, `_`는 한 문자 패턴이다.
 
@@ -552,6 +560,10 @@ Oracle에서 소유자가 A에게 객체의 SELECT 권한을 WITH GRANT OPTION�
 ### 강의 개념 정리
 
 객체 권한을 WITH GRANT OPTION으로 받으면 다른 사용자에게 그 권한을 줄 수 있다. Oracle의 WITH ADMIN OPTION은 시스템 권한이나 역할을 다시 부여할 때 쓴다. 회수 문제는 누가 누구에게 어떤 경로로 권한을 주었는지 그려 본다.
+
+**권한을 따라가는 화살표** · [강의 1:24:05](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=5045s)
+
+판서의 USER1 → USER2는 객체를 넘기는 화살표가 아니라 권한을 다시 부여하는 경로다. Oracle에서 소유자가 USER1에게 SELECT를 WITH GRANT OPTION으로 주고 USER1이 USER2에게 전달했다면, 첫 권한을 회수할 때 그 경로로 받은 권한도 회수된다. USER2에게 다른 부여 경로가 있다면 그 경로까지 없어지는 것은 아니다.
 
 ```sql
 GRANT SELECT ON study_result TO study_reader;
