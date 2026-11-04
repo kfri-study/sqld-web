@@ -77,10 +77,31 @@
     layout.querySelector('[data-step="-1"]').disabled = readingPosition === 0;
     layout.querySelector('[data-step="1"]').disabled = readingPosition === 2;
   }
+  function readingGuide(c, s, map) {
+    const [question, ...parts] = lessonFigures[c.id - 1][s.id - 1];
+    const caption = parts.pop();
+    const source = document.createElement('template');
+    source.innerHTML = s.lecture + s.html;
+    const lecture = source.content.querySelector('a[href*="youtube.com/watch"]');
+    const docs = [...new Map([...source.content.querySelectorAll('a[href^="https://docs.oracle.com/"], a[href^="https://learn.microsoft.com/"]')].map(a => [a.href, a])).values()];
+    const steps = parts.map(part => {
+      const [label, value] = part.split(' / ');
+      return `<div><small>${esc(label)}</small><strong>${esc(value)}</strong></div>`;
+    }).join('');
+    const first = c.id === 1 && s.id === 1;
+    return `<aside class="read-guide" aria-label="단원 읽기 안내">
+      <small>먼저 그림으로 이해하기 · 자체 제작 예시</small>
+      <figure><figcaption>${esc(question)}</figcaption>${first ? '<img src="diagrams/crud-enrollment.svg" alt="학생이 과목을 선택하고 수강을 신청할 때 과목 정보는 조회하고 수강 기록은 생성한다.">' : `<div class="concept-steps">${steps}</div>`}
+      ${map ? `<button type="button" data-read-target=".diagram-canvas">관련 개념도 보기 ↓</button>` : ''}
+      <div class="figure-key">${esc(caption)}</div></figure>
+      <div class="source-line">참고한 강의 · 아답터 ${c.id}과목 ${lecture ? lecture.outerHTML : ''}</div>
+      ${docs.length ? `<div class="source-line">SQL 동작 확인 · ${docs.map(a => a.outerHTML).join(' · ')}</div>` : ''}
+      <nav aria-label="단원 안에서 이동">${[[s.examNote && '.exam-note','시험 포인트'],['.lesson-detail','설명과 예제'],['.reading-paper dl','용어 찾기']].filter(([target])=>target).map(([target,label])=>`<button type="button" data-read-target="${target}">${label} ↓</button>`).join('')}</nav></aside>`;
+  }
   function lessonPage(c,s) {
     const saved=!!state.saved[lessonKey(c.id,s.id)],done=!!state.done[lessonKey(c.id,s.id)];
     const map=c.id===1&&s.id===4?'pk-fk':c.id===1&&[5,7].includes(s.id)?(s.id===7?'normalization':'student-model'):c.id===2&&[2,6,7].includes(s.id)?'sql-order':null;
-    return `<div class="reading-layout"><div class="reading-toolbar"><a class="back-link" href="#/course/${c.id}">← ${c.id}과목 전체 목차</a><div class="reading-tools"><div class="reading-align" role="group" aria-label="본문 정렬"><button type="button" data-step="-1" aria-label="본문 왼쪽으로 이동">←</button><span data-align-name aria-live="polite"></span><button type="button" data-step="1" aria-label="본문 오른쪽으로 이동">→</button></div><button class="icon-button ${saved?'selected':''}" id="save-lesson" aria-label="${saved?'저장한 단원에서 해제':'단원 저장'}" aria-pressed="${saved}">${saved?'★':'☆'}</button><button class="icon-button" id="print-button" aria-label="단원 인쇄">⎙</button></div></div><header class="reading-head"><p class="eyebrow">SUBJECT 0${c.id} / LESSON ${String(s.id).padStart(2,'0')}</p><h1>${esc(s.title)}</h1><p class="reading-summary">${esc(s.summary)}</p></header><article class="reading-paper prose" aria-label="학습 본문">${s.examNote?`<section class="exam-note"><h2>강사가 짚은 시험 포인트</h2>${s.examNote}</section>`: ''}<h2>핵심 포인트</h2><ul>${s.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>${s.lecture?`<section class="lesson-lecture"><h2>강의와 함께 보기</h2>${s.lecture}</section>`:''}<h2>용어 풀이</h2><dl>${s.terms.map(([ko,en,def])=>`<dt><b>${esc(ko)}</b> · <span lang="en">${esc(en)}</span></dt><dd>${esc(def)}</dd>`).join('')}</dl>${map?`<div class="diagram-canvas" tabindex="0" aria-label="개념도">${window.STUDY_DIAGRAMS[map]}</div><a href="diagrams/${map}.html" target="_blank" rel="noopener">그림 크게 보기 ↗</a>`:''}<section class="lesson-detail"><h2>본문과 예제</h2>${s.html}</section></article><button id="open-lesson-note" class="button floating-note" type="button" aria-expanded="false" aria-controls="lesson-note-dialog">✎ 강의 보며 필기</button>
+    return `<div class="reading-layout"><div class="reading-toolbar"><a class="back-link" href="#/course/${c.id}">← ${c.id}과목 전체 목차</a><div class="reading-tools"><div class="reading-align" role="group" aria-label="본문 정렬"><button type="button" data-step="-1" aria-label="본문 왼쪽으로 이동">←</button><span data-align-name aria-live="polite"></span><button type="button" data-step="1" aria-label="본문 오른쪽으로 이동">→</button></div><button class="icon-button ${saved?'selected':''}" id="save-lesson" aria-label="${saved?'저장한 단원에서 해제':'단원 저장'}" aria-pressed="${saved}">${saved?'★':'☆'}</button><button class="icon-button" id="print-button" aria-label="단원 인쇄">⎙</button></div></div><header class="reading-head"><p class="eyebrow">SUBJECT 0${c.id} / LESSON ${String(s.id).padStart(2,'0')}</p><h1>${esc(s.title)}</h1><p class="reading-summary">${esc(s.summary)}</p></header><article class="reading-paper prose" aria-label="학습 본문">${readingGuide(c,s,map)}${s.examNote?`<section class="exam-note"><h2>강사가 짚은 시험 포인트</h2>${s.examNote}</section>`: ''}<h2>핵심 포인트</h2><small class="origin-tag">학습용 요약</small><ul>${s.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>${s.lecture?`<section class="lesson-lecture"><h2>강의와 함께 보기</h2><small class="origin-tag">참고 강의 · 아답터 ${c.id}과목 / 설명은 자체 재구성</small>${s.lecture}</section>`:''}<h2>용어 풀이</h2><dl>${s.terms.map(([ko,en,def])=>`<dt><b>${esc(ko)}</b> · <span lang="en">${esc(en)}</span></dt><dd>${esc(def)}</dd>`).join('')}</dl>${map?`<div class="diagram-canvas" tabindex="0" aria-label="개념도">${window.STUDY_DIAGRAMS[map]}</div><a href="diagrams/${map}.html" target="_blank" rel="noopener">그림 크게 보기 ↗</a>`:''}<section class="lesson-detail"><h2>본문과 예제</h2><small class="origin-tag">학습용으로 다시 쓴 설명과 사례 · 공식 문서는 해당 단원의 참고 링크에 표시</small>${s.html}</section></article><button id="open-lesson-note" class="button floating-note" type="button" aria-expanded="false" aria-controls="lesson-note-dialog">✎ 강의 보며 필기</button>
 <div class="reading-bottom"><label class="complete-label"><input type="checkbox" id="complete-lesson" ${done?'checked':''}>이 단원 공부했어요</label>${s.id<c.sections.length?button(lessonURL(c.id,s.id+1),'다음 단원'):button(`#/quiz/${c.id}`,'복습문제로 확인하기')}</div><nav class="lesson-navigation" aria-label="앞뒤 단원">${s.id>1?`<a href="${lessonURL(c.id,s.id-1)}">← ${esc(c.sections[s.id-2].title)}</a>`:'<span></span>'}${s.id<c.sections.length?`<a href="${lessonURL(c.id,s.id+1)}">${esc(c.sections[s.id].title)} →</a>`:''}</nav></div>`;
   }
   const maps=[{slug:'pk-fk',title:'학생 한 명과 여러 수강 기록',subtitle:'1과목 · 기본키와 외래키',course:1,lesson:4},{slug:'student-model',title:'학생과 과목을 연결하는 수강',subtitle:'1과목 · 관계와 교차 엔터티',course:1,lesson:5},{slug:'normalization',title:'정규화로 정보를 나누기',subtitle:'1과목 · 부분 종속과 이행 종속',course:1,lesson:7},{slug:'sql-order',title:'SQL의 논리적 해석 순서',subtitle:'2과목 · 작성 순서와 해석 순서',course:2,lesson:2}];
@@ -138,6 +159,9 @@
     else {out=`<div class="empty-state"><p>찾는 학습 페이지가 없어요.</p>${button('#/home','학습 홈으로')}</div>`;title='페이지를 찾을 수 없어요';}
     $('#main').innerHTML=out;$('#top-breadcrumb').textContent=title;document.title=`${title} | SQLD 학습 노트`;sidebar();decorate();
     updateReadingPosition();
+    for (const button of document.querySelectorAll('[data-read-target]')) {
+      button.onclick = () => document.querySelector(button.dataset.readTarget)?.scrollIntoView({block:'start'});
+    }
     if(route.view==='lesson') studyNotes.mountLesson(lessonKey(route.course, route.section));
     if(route.view==='settings') studyNotes.mountSettings();
     if(scroll){window.scrollTo(0,0);$('#main').focus({preventScroll:true});}
