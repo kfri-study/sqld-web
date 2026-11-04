@@ -111,10 +111,11 @@ const studyNotes = (() => {
     const root = document.getElementById('personal-notes');
     if (!root || !units.has(key)) return;
     root.innerHTML = `<label>이 단원의 메모<textarea rows="6" placeholder="헷갈린 개념이나 오답 이유를 적어 보세요."></textarea></label>
-      <p class="note-status" role="status"></p><a href="#/settings">백업 설정 ↗</a>`;
+      <button type="button" data-publish>스티커 발행</button><p class="note-status" role="status"></p><a href="#/settings">백업 설정 ↗</a>`;
     const editor = root.querySelector('textarea');
     const status = root.querySelector('[role=status]');
     editor.value = notes[key] || '';
+    lessonStickers.mount(key, editor, root.querySelector('[data-publish]'), status);
     const popup = document.getElementById('lesson-note-dialog');
     const opener = document.getElementById('open-lesson-note');
     popup.querySelector('[data-note-unit]').textContent = '필기 단원 · ' + units.get(key);
@@ -179,7 +180,7 @@ const studyNotes = (() => {
     const root = document.getElementById('backup-settings');
     root.innerHTML = `<h2>노트 백업 위치</h2><p data-destination></p>
       <div class="note-actions"><button type="button" data-save disabled>백업 위치 확인 중</button><button type="button" data-location hidden>다른 위치에 저장</button></div>
-      <p>백업 버튼을 누르면 모든 단원의 메모가 한 파일에 저장돼요.</p>
+      <p>백업 버튼을 누르면 모든 단원의 메모와 스티커가 한 파일에 저장돼요.</p>
       <h2>노트 복원</h2><p>JSON 백업은 원래 단원으로 복원돼요. TXT·MD 파일은 아래에서 고른 단원으로 가져와요.</p>
       <label>TXT·MD를 가져올 단원 <select></select></label>
       <div class="note-actions"><button type="button" data-open>내 파일 열기</button><input type="file" accept=".json,.txt,.md" hidden></div>
@@ -203,7 +204,7 @@ const studyNotes = (() => {
     saveButton.disabled = true;
     locationReady.then(showLocation);
     async function saveFile(chooseLocation) {
-      const blob = new Blob([JSON.stringify({format:'sqld-notes', version:1, notes}, null, 2)], {type:'application/json'});
+      const blob = new Blob([JSON.stringify({format:'sqld-notes', version:2, notes, stickers:lessonStickers.all()}, null, 2)], {type:'application/json'});
       saveButton.disabled = changeButton.disabled = true;
       try {
         if (supportsLocation) {
@@ -246,14 +247,17 @@ const studyNotes = (() => {
       try {
         const contents = await file.text();
         let incoming;
+        let stickers = [];
         if (/\.json$/i.test(file.name)) {
           const parsed = JSON.parse(contents.replace(/^\uFEFF/, ''));
-          if (parsed.format !== 'sqld-notes' || parsed.version !== 1) throw Error('format');
+          if (parsed.format !== 'sqld-notes' || ![1,2].includes(parsed.version)) throw Error('format');
           incoming = validate(parsed.notes);
+          if (parsed.version === 2) stickers = lessonStickers.validate(parsed.stickers);
         } else if (/\.(txt|md)$/i.test(file.name)) incoming = {[destination]: contents};
         else throw Error('format');
         const conflicts = Object.keys(incoming).filter(id => notes[id] && notes[id] !== incoming[id]);
         if (conflicts.length && !confirm('이미 작성한 ' + conflicts.length + '개 단원의 메모가 달라요. 파일 내용으로 바꿀까요?')) return;
+        if (stickers.length) lessonStickers.restore(stickers);
         Object.assign(notes, incoming);
         const saved = persist();
         status.textContent = saved ? '파일을 읽고 이 브라우저에 저장했어요.' : '파일을 읽었어요. 브라우저 저장 공간이 부족해요.';

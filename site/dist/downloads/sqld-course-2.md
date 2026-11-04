@@ -22,6 +22,10 @@
 
 행 선택(Selection)은 조건을 만족하는 행을 남기고, 열 선택(Projection)은 필요한 속성만 남긴다. 두 행과 세 행을 조건 없이 곱하면 여섯 조합이다. 그중 두 키가 일치하는 조합만 남기는 것이 등가 조인을 이해하는 출발점이다.
 
+### 강의 개념 정리
+
+관계대수에서 셀렉션은 행, 프로젝션은 열을 고른다. 카티션 곱은 두 입력의 모든 행 조합을 만들고 조인은 조건에 맞는 조합을 연결한다. SQL 문장은 조회·변경, 구조 정의, 트랜잭션, 권한 중 무엇을 다루는지로 구별한다.
+
 | 분류 | 목적 | 예 |
 |---|---|---|
 | 조회 및 데이터 조작 | 값을 읽거나 행을 바꿈 | SELECT, INSERT, UPDATE, DELETE, MERGE |
@@ -42,6 +46,10 @@ SELECT를 DML에 포함하거나 DQL로 따로 부르는 분류가 있다. 명�
 [강의 06:38 · SELECT와 별칭](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=398s)
 
 DISTINCT는 출력 열 전체의 조합에 적용된다. LOAN에서 지점 10이 두 번 나오면 SELECT DISTINCT branch_id에서는 한 행이다. loan_id까지 함께 출력하면 두 대여가 서로 달라 두 행이 남는다.
+
+### 강의 개념 정리
+
+SELECT DISTINCT는 출력하는 열 조합이 같은 행을 하나로 만든다. FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY 순으로 결과를 해석하면 SELECT에서 만든 별칭을 WHERE에서 쓰기 어려운 이유를 알 수 있다.
 
 직접 만든 도서 대여 서비스의 대여 기록 `LOAN`을 사용한다. FEE는 확정 대여료, LATE_FEE는 연체료다. NULL은 아직 값이 없다는 뜻이다.
 
@@ -82,6 +90,10 @@ ORDER BY fee DESC, loan_id;
 
 COALESCE(NULL, 0, 7)의 결과는 0이다. 왼쪽부터 처음 만나는 NULL 아닌 값을 택하기 때문이다. NULLIF(0, 0)은 두 값이 같으므로 NULL이다. 0을 유효한 값으로 보존할지부터 정한 뒤 함수를 고른다.
 
+### 강의 개념 정리
+
+COUNT(*)는 행을 세고 COUNT(열)은 그 열이 NULL인 행을 제외한다. COALESCE는 왼쪽부터 처음 만나는 비NULL 값을 반환하고 NULLIF(a,b)는 두 값이 같으면 NULL을 반환한다.
+
 `fee > 100`에서 FEE가 NULL인 15번 행은 UNKNOWN이다. WHERE는 TRUE인 행만 남기므로 15번은 결과에서 제외된다. `NOT (fee > 100)`으로 바꾸어도 UNKNOWN은 TRUE로 바뀌지 않는다.
 
 | 의도 | 쓸 조건 |
@@ -102,6 +114,10 @@ COALESCE(NULL, 0, 7)의 결과는 0이다. 왼쪽부터 처음 만나는 NULL �
 [강의 14:23 · 단일행 함수와 변환](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=863s)
 
 Oracle 예시에서 TO_DATE('2026-11-03', 'YYYY-MM-DD')는 문자를 날짜로 바꾸고 TO_CHAR는 날짜나 숫자를 표시할 문자로 바꾼다. 문자열 SQL_01에서 SUBSTR('SQL_01', 1, 3)은 SQL이다. 함수가 돌려주는 값의 자료형까지 확인한다.
+
+### 강의 개념 정리
+
+단일행 함수는 행마다 문자·숫자·날짜 등을 계산한다. SUBSTR은 일부 문자열을 추출하고 ROUND는 반올림한다. 날짜 변환은 입력 형식을 명시하고 CASE의 조건은 위에서부터 확인한다.
 
 ```sql
 SELECT loan_id,
@@ -134,6 +150,10 @@ FROM loan;
 
 문자 그대로의 밑줄을 찾을 때는 이스케이프 문자를 정한다. 예를 들어 `code LIKE 'SQL!_%' ESCAPE '!'`는 SQL_01과 일치하고 SQLA01과는 일치하지 않는다. 밑줄 앞의 !가 없으면 밑줄은 임의의 한 글자다.
 
+### 강의 개념 정리
+
+BETWEEN은 양쪽 경계를 포함한다. LIKE에서 %는 0개 이상의 문자, _는 정확히 한 문자다. AND가 OR보다 먼저 적용되므로 원하는 묶음은 괄호로 나타낸다.
+
 `fee BETWEEN 120 AND 180`은 양 끝을 포함하여 ID 11·12·13을 남긴다. `fee IN (120, 300)`은 11·14를 남긴다. `reader LIKE '_온'`은 두 글자이며 끝이 ‘온’인 다온·라온에 해당한다. `%`는 0개 이상 문자, `_`는 한 문자 패턴이다.
 
 ```sql
@@ -157,6 +177,10 @@ ORDER BY loan_id;
 [강의 32:30 · GROUP BY와 HAVING](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=1950s)
 
 조건이 어느 단위에 적용되는지 바꿔 읽어 보자. 지점 20의 대여료가 180과 300이면 WHERE fee >= 200 뒤의 합은 300이다. 두 행을 먼저 합한 뒤 HAVING SUM(fee) >= 400으로 거르면 합 480인 지점 20이 남는다.
+
+### 강의 개념 정리
+
+WHERE로 남긴 행을 GROUP BY로 묶고 HAVING으로 그룹을 고른다. ‘학생 3명 이상인 과목’은 개별 행의 조건이 아니라 과목별 집계 결과의 조건이다.
 
 ```sql
 SELECT branch_id, COUNT(*) AS loans, SUM(fee) AS fee_sum
@@ -189,6 +213,10 @@ WHERE로 빈 집합을 만든 뒤 GROUP BY 없이 집계하면 COUNT(*)는 0, SU
 
 대여료 내림차순에서 180이 두 행이라면 대여료만으로는 둘의 순서가 결정되지 않는다. 정확히 두 건을 고를 때와 공동 순위까지 고를 때의 답이 다르므로, 전자는 고유번호로 순서를 확정하고 후자는 동점 판단 기준을 유지한다.
 
+### 강의 개념 정리
+
+정렬은 첫 기준을 먼저 적용하고 동점에서 다음 기준을 쓴다. 상위 N건에서 정확히 N행을 뽑을지, 경계에서 같은 점수까지 포함할지 결정한다. Oracle의 ROWNUM은 같은 조회 단계의 ORDER BY보다 먼저 부여될 수 있다.
+
 최종 ORDER BY가 없으면 출력 순서를 보장하지 않는다. 같은 대여료 사이의 순서가 중요하면 고유 ID 같은 추가 정렬 키를 둔다.
 
 Oracle 19c 예:
@@ -214,6 +242,10 @@ SQL Server는 `SELECT TOP (2) ... ORDER BY ...`를 사용할 수 있다. Oracle�
 [강의 41:10 · 표준 조인](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=2470s)
 
 양쪽 열 이름이 branch_id라면 JOIN branch USING (branch_id)로 연결할 수 있다. ON은 열 이름이 다르거나 추가 조건이 있을 때도 쓴다. NATURAL JOIN은 이름이 같은 열을 모두 조건에 넣으므로 나중에 동명 열이 추가되면 결과가 달라질 수 있다.
+
+### 강의 개념 정리
+
+내부 조인은 일치하는 쌍만 남기고 왼쪽 외부 조인은 짝이 없는 왼쪽 행도 남긴다. 외부 조인 뒤 WHERE에서 오른쪽 열을 제한하면 NULL로 보존한 행까지 제외할 수 있다.
 
 ```sql
 SELECT b.branch_id, b.branch_name, l.loan_id
@@ -246,6 +278,10 @@ SELF JOIN은 같은 테이블에 서로 다른 별칭을 붙여 연결하는 방
 
 FROM 안의 SELECT를 인라인 뷰(Inline view)라고 한다. 지점별 합계를 먼저 구해 이름을 붙이면 바깥 SELECT가 그 합계를 일반 열처럼 걸러낼 수 있다. 스칼라 서브쿼리는 한 열과 최대 한 행을 기대한다. Oracle에서는 0행이면 NULL이고 여러 행이면 오류다.
 
+### 강의 개념 정리
+
+스칼라 서브쿼리는 한 열·최대 한 행의 값, 인라인 뷰는 FROM의 임시 결과다. EXISTS는 안쪽 행의 존재를 묻는다. NOT IN 목록에 NULL이 있으면 일치하지 않는 값도 UNKNOWN이 될 수 있다.
+
 ```sql
 SELECT loan_id, fee
 FROM loan
@@ -270,11 +306,15 @@ ORDER BY b.branch_id;
 
 ## 10 결과를 합치거나 겹치기
 
-**핵심 한 줄:** 집합 연산은 열 방향 연결이며 열 개수와 자료형 호환성을 확인한다.
+**핵심 한 줄:** 집합 연산은 두 결과를 행 방향으로 결합하는 연산이며 열 개수와 자료형 호환성을 확인한다.
 
 [강의 50:45 · 집합 연산](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=3045s)
 
 왼쪽 결과가 A, A, B이고 오른쪽이 A, C라면 UNION ALL은 다섯 행, UNION은 A·B·C 세 행이다. INTERSECT는 A를, 왼쪽 MINUS 오른쪽은 B를 남긴다. 최종 표시 순서가 필요하면 전체 결과에 ORDER BY를 적용한다.
+
+### 강의 개념 정리
+
+UNION ALL은 두 결과를 행 방향으로 이어 붙이고 UNION은 중복도 제거한다. INTERSECT는 공통 행, MINUS 또는 EXCEPT는 첫 결과에만 있는 행이다. 대응하는 열의 수와 자료형이 호환돼야 한다.
 
 두 조회의 결과가 A=`[10,10,20]`, B=`[20,30]`이라고 하자.
 
@@ -299,6 +339,10 @@ ORDER BY b.branch_id;
 
 ROLLUP(지점, 월)은 (지점, 월), (지점), () 수준을 만든다. CUBE는 여기에 지점 전체를 가로지르는 (월) 수준까지 더한다. GROUPING(월)이 1이면 월을 집계에서 제외한 소계 표시이고, 원본의 미입력 월과 구별할 수 있다.
 
+### 강의 개념 정리
+
+ROLLUP(a,b)는 (a,b), (a), 전체 순으로 집계한다. CUBE(a,b)는 (b)도 포함하고 GROUPING SETS는 필요한 조합을 직접 지정한다. GROUPING으로 원래 NULL과 집계 때문에 생긴 NULL을 구분한다.
+
 `GROUP BY ROLLUP(branch_id)`는 지점별 집계와 전체 총계를 만든다. 실습에서는 실제 NULL 지점 그룹과 전체 총계가 모두 나타날 수 있다.
 
 ```sql
@@ -321,6 +365,10 @@ ROLLUP(a,b)는 `(a,b)`, `(a)`, `()` 집계 수준을 만든다. CUBE(a,b)는 여
 [강의 55:10 · 윈도우 함수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=3310s)
 
 점수 10·20·20을 오름차순으로 정렬하면 20인 각 행의 RANK는 2다. PERCENT_RANK는 (순위−1)/(행 수−1)이므로 0.5이고 CUME_DIST는 현재 값 이하인 행 수/전체 행 수이므로 1이다. NTILE은 정렬된 행을 지정한 수의 묶음으로 나누므로 동점도 갈라질 수 있다.
+
+### 강의 개념 정리
+
+윈도우 함수는 행을 유지한다. PARTITION BY는 계산할 묶음, ORDER BY는 계산 순서, 프레임은 현재 행에 포함할 범위다. ROWS는 행 수를 기준으로 하고 RANGE는 정렬값을 기준으로 하므로 동점에서 누적합이 달라질 수 있다.
 
 FEE가 NULL인 행을 제외하고 내림차순으로 정렬하면 금액은 300·180·180·120이다.
 
@@ -357,6 +405,10 @@ ROWS는 행 위치 기준이며 RANGE는 정렬값의 동점 범위 등을 함�
 
 직원 표의 manager_id가 같은 표의 employee_id를 참조한다고 하자. 자기 조인 한 번은 직원과 직속 상사를 짝짓는다. 최상위 상사까지 깊이를 모르면 계층형 질의나 재귀 질의로 부모 연결을 반복해서 따라간다.
 
+### 강의 개념 정리
+
+셀프 조인은 같은 표를 별칭으로 두 번 사용해 자식과 부모를 짝짓는다. Oracle 계층 질의는 START WITH로 출발 행을, CONNECT BY로 다음 행을 정한다. PRIOR가 어느 열에 붙는지 보고 탐색 방향을 읽는다.
+
 학습용 분류표 `CATEGORY(category_id, parent_id)`에서 최상위 행의 PARENT_ID는 NULL이라고 하자. Oracle 계층 조회 예시는 다음과 같다.
 
 ```sql
@@ -386,6 +438,10 @@ PRIOR가 붙은 CATEGORY_ID는 부모 행의 값이다. 자식의 PARENT_ID와 �
 
 한 학생의 1차 점수 70·80을 MAX로 피벗하면 80만 남는다. 이를 다시 언피벗해도 70은 복원되지 않는다. 방향을 뒤집기 전에 집계 단계에서 정보가 합쳐졌는지 확인한다.
 
+### 강의 개념 정리
+
+PIVOT은 분류값별 집계를 열로 펼치고 UNPIVOT은 여러 열을 행으로 모은다. 정규식에서 ^와 $는 시작과 끝, [0-9]는 숫자 한 자리다. 패턴 검색과 표 모양 변환을 구별한다.
+
 두 지점의 대여료 합계를 한 행으로 만들려면 조건부 집계를 쓸 수 있다.
 
 ```sql
@@ -408,6 +464,10 @@ Oracle의 `REGEXP_LIKE(code, '^[A-Z]{2}[0-9]{3}$')`는 대문자 두 개와 숫�
 
 INSERT에서 열 목록을 쓰면 값이 어느 열에 대응하는지 드러난다. 생략한 열에는 기본값이 있으면 기본값이 적용되고, 기본값이 없으면 일반적으로 NULL이 들어간다. NOT NULL을 위반하면 행이 저장되지 않는다.
 
+### 강의 개념 정리
+
+INSERT는 새 행, UPDATE는 기존 행의 값, DELETE는 기존 행 자체를 다룬다. MERGE는 대상과 원본의 일치 여부에 따라 수정이나 삽입을 수행한다. 조건을 생략하면 변경 범위가 표 전체가 될 수 있다.
+
 ```sql
 UPDATE loan
 SET late_fee = 0
@@ -429,6 +489,10 @@ MERGE는 소스와 대상의 매칭 조건에 따라 갱신·삽입 등을 결�
 [강의 75:57 · TCL과 저장점](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4557s)
 
 대여료를 100에서 120으로 바꾸고 저장점 S를 만든 뒤 150으로 바꿨다고 하자. ROLLBACK TO S 직후 값은 120이고 아직 확정 전이다. 그 뒤 COMMIT하면 120이 확정된다.
+
+### 강의 개념 정리
+
+COMMIT은 변경을 확정하고 ROLLBACK은 미확정 변경을 되돌린다. SAVEPOINT 뒤의 변경만 취소할 수도 있다. 격리 수준은 다른 거래의 미확정 값을 볼 수 있는지, 같은 조회 결과가 바뀔 수 있는지로 비교한다.
 
 ```sql
 SAVEPOINT before_change;
@@ -455,6 +519,10 @@ Oracle은 문법적으로 유효한 DDL 실행 전에 암묵적으로 COMMIT하�
 
 행 일부만 지우려면 DELETE와 조건을 사용한다. TRUNCATE는 표의 전체 데이터를 비우고 구조를 남긴다. DROP TABLE은 표 정의까지 제거한다. 취소 가능 여부는 DBMS와 명령마다 다르므로 시험에서 지정한 환경을 확인한다.
 
+### 강의 개념 정리
+
+CREATE·ALTER·DROP은 객체의 구조를 정의·변경·제거한다. TRUNCATE는 테이블 정의를 남기고 전체 데이터를 비운다. DELETE와의 롤백 차이는 DBMS에 따라 달라진다.
+
 Oracle 예:
 
 ```sql
@@ -480,6 +548,10 @@ ALTER는 객체 구조 변경, DROP은 객체 제거, TRUNCATE는 테이블의 �
 [강의 83:15 · DCL과 권한 회수](https://www.youtube.com/watch?v=Rv4Q4ZrPS94&t=4995s)
 
 Oracle에서 소유자가 A에게 객체의 SELECT 권한을 WITH GRANT OPTION으로 주고 A가 B에게 전달했다고 하자. 다른 부여 경로가 없다면 소유자가 A의 권한을 회수할 때 B도 그 경로의 권한을 잃는다. 시스템 권한의 WITH ADMIN OPTION은 A의 권한을 회수해도 이미 B에게 부여한 권한이 자동으로 회수되지 않는다.
+
+### 강의 개념 정리
+
+객체 권한을 WITH GRANT OPTION으로 받으면 다른 사용자에게 그 권한을 줄 수 있다. Oracle의 WITH ADMIN OPTION은 시스템 권한이나 역할을 다시 부여할 때 쓴다. 회수 문제는 누가 누구에게 어떤 경로로 권한을 주었는지 그려 본다.
 
 ```sql
 GRANT SELECT ON study_result TO study_reader;

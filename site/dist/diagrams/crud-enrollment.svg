@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 265" role="img" aria-labelledby="t d">
+<title id="t">수강 신청을 세 관점으로 읽기</title><desc id="d">학생이 과목을 선택하면 시스템은 과목을 조회하고 수강 기록을 생성한다.</desc>
+<rect width="640" height="265" rx="18" fill="#eef4fc"/>
+<g font-family="system-ui,sans-serif" fill="#173654">
+<text x="26" y="43" font-size="23" font-weight="700">수강 신청 한 건을 따라가면</text>
+<g font-size="18"><text x="26" y="92">① 데이터</text><text x="195" y="92">학생 101</text><text x="385" y="92">과목 SQL 입문</text>
+<text x="26" y="151">② 프로세스</text><text x="195" y="151">과목 선택</text><text x="347" y="151">→</text><text x="385" y="151">수강 신청</text>
+<text x="26" y="211">③ 상관 (CRUD)</text><text x="195" y="211" fill="#205aaa">R · 과목 조회</text><text x="385" y="211" fill="#205aaa">C · 수강 생성</text></g>
+</g><path d="M26 111H613 M26 171H613" stroke="#c0d3e9"/>
+</svg>
