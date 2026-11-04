@@ -83,6 +83,11 @@
     return `<header class="page-head"><a href="#/course/${c.id}">← ${c.id}과목 목차</a><h1>${c.id}과목 강의 시간표</h1><p>듣고 있는 시각을 누르면 해당 단원의 설명으로 이동해요.</p></header>
     <article class="reading-paper schedule-list">${lectureTracks[c.id-1].map(([unit,title,rows])=>`<section><h2>${esc(title)}</h2>${rows.map(([time,label,,exam])=>`<a id="schedule-${seconds(time)}" href="${lessonURL(c.id,unit)}/${seconds(time)}" data-schedule-time="${seconds(time)}"><time>${time}</time><span>${esc(label)}${exam?' <small>시험 언급</small>':''}</span><span aria-hidden="true">→</span></a>`).join('')}</section>`).join('')}</article>`;
   }
+  function flowTable(data) {
+    if (!data) return '';
+    const [header,...rows] = data.split(';').map(row => row.split('|'));
+    return `<div class="flow-result"><table aria-label="현재 단계의 예제 표"><thead><tr>${header.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(cell=>`<td>${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table>${rows.length?'':'<small>결과 0행</small>'}</div>`;
+  }
   function flowPlayer(key) {
     const steps = lectureFlows[key];
     if (!steps) return '';
@@ -90,7 +95,7 @@
       <small>움직이는 예제 · 자체 제작</small>
       <div class="flow-stops">${steps.map(([label], i) => `<span ${i===0?'aria-current="step"':''}>${esc(label)}</span>`).join('')}</div>
       <div class="flow-caption" aria-live="polite">${esc(steps[0][1])}</div>
-      <div class="flow-controls"><button type="button" data-play>▶ 흐름 재생</button><button type="button" data-prev disabled aria-label="이전 단계">←</button><output>1 / ${steps.length}</output><button type="button" data-next aria-label="다음 단계">→</button></div></div>`;
+      <div data-flow-table>${flowTable(steps[0][2])}</div><div class="flow-controls"><button type="button" data-play>▶ 흐름 재생</button><button type="button" data-prev disabled aria-label="이전 단계">←</button><output>1 / ${steps.length}</output><button type="button" data-next aria-label="다음 단계">→</button></div></div>`;
   }
   let stopActiveFlow;
   function bindFlow(root) {
@@ -104,6 +109,7 @@
       stops.forEach((stop, index) => index===i ? stop.setAttribute('aria-current','step') : stop.removeAttribute('aria-current'));
       root.querySelector('.flow-caption').textContent = steps[i][1];
       root.querySelector('output').textContent = (i+1)+' / '+steps.length;
+      root.querySelector('[data-flow-table]').innerHTML = flowTable(steps[i][2]);
       prev.disabled = i===0;
       next.disabled = i===steps.length-1;
       play.textContent = timer ? 'Ⅱ 일시정지' : next.disabled ? '↺ 다시 재생' : i ? '▶ 이어서 재생' : '▶ 흐름 재생';
@@ -261,6 +267,8 @@
     if(scroll){window.scrollTo(0,0);$('#main').focus({preventScroll:true});}
     closeMenu();
     if(route.at && (route.view==='schedule' || route.view==='lesson')){
+      if(route.course===2 && route.at===2325) route.at=2332;
+      if(route.course===2 && route.section===14 && route.at===4280) route.at=4307;
       const row = document.getElementById((route.view==='schedule'?'schedule-':'moment-')+route.at);
       if(row){row.classList.add('current-segment');requestAnimationFrame(()=>row.scrollIntoView({block:'center'}));}
     }
