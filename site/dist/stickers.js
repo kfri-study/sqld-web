@@ -16,7 +16,12 @@ const lessonStickers = (() => {
   function mount(unit, editor, button, status) {
     const page = document.querySelector('.reading-layout');
     const anchors = [...page.querySelectorAll('.reading-head, .reading-paper h2, .reading-paper h3, .reading-paper p, .reading-paper ul, .reading-paper ol, .reading-paper table, .reading-paper dl, .reading-paper pre, .diagram-canvas, .reading-bottom')];
-    anchors.push(...page.querySelectorAll('.moment'));
+    const legacyTimes = [[6, 61, 82, 110, 137, 162, 359, 371, 503, 662, 799, 914, 1163, 1215, 1312, 1447, 1634, 1720, 1746, 1918, 2117, 2226, 2444, 2515, 2585, 2610, 2717, 2732, 2881], [6, 82, 166, 286, 380, 398, 700, 863, 1231, 1381, 1491, 1549, 1566, 1743, 1928, 1948, 1950, 2135, 2312, 2325, 2470, 2730, 3051, 3062, 3158, 3310, 3560, 3723, 3940, 4154, 4280, 4355, 4397, 4423, 4557, 4750, 4998]];
+    const moments = [...page.querySelectorAll('.moment')];
+    const originalCount = anchors.length;
+    const legacy = legacyTimes[Number(unit.split('-')[0])-1];
+    for (const time of legacy) anchors.push(document.getElementById('moment-'+time));
+    anchors.push(...moments.filter(el=>!legacy.includes(Number(el.id.slice(7)))));
     function draw(s) {
       const note = document.createElement('aside');
       note.className = 'study-sticker';
@@ -38,7 +43,8 @@ const lessonStickers = (() => {
         try { save(items.filter(i => i.id !== s.id)); note.remove(); }
         catch { alert('삭제 내용을 저장하지 못했어요.'); }
       };
-      anchors[Math.min(s.anchor, anchors.length-1)].after(note);
+      const target = s.moment ? document.getElementById(s.moment) : anchors[s.anchor];
+      (target || anchors[originalCount-1]).after(note);
     }
     items.filter(s => s.unit === unit).forEach(draw);
     let pending = false;
@@ -53,6 +59,7 @@ const lessonStickers = (() => {
       e.preventDefault();
       e.stopImmediatePropagation();
       const distance = el => {
+        if (!el) return Infinity;
         const r = el.getBoundingClientRect();
         if (!r.height) return Infinity;
         return Math.max(r.top-e.clientY, e.clientY-r.bottom, 0);
@@ -60,6 +67,7 @@ const lessonStickers = (() => {
       const anchor = anchors.reduce((best,el,i) => distance(el)<distance(anchors[best]) ? i : best,0);
       const r = anchors[anchor].getBoundingClientRect();
       const s = {id:crypto.randomUUID(),unit,text:editor.value.trim(),anchor,x:Math.max(0,Math.min(1,(e.clientX-r.left)/Math.max(1,r.width)))};
+      if (anchors[anchor].classList.contains('moment')) s.moment = anchors[anchor].id;
       if (!s.text) return;
       try { save([...items,s]); } catch { status.textContent='저장 공간을 확인해 주세요.'; return; }
       draw(s);
