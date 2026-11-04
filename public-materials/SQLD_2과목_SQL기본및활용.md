@@ -138,6 +138,10 @@ FROM loan;
 
 날짜는 가능하면 날짜형으로 비교한다. Oracle 예: `created_at >= DATE '2026-01-01' AND created_at < DATE '2027-01-01'`. 세션 형식에 의존하는 암묵적 문자→날짜 변환은 피한다.
 
+**시험 대비 보충 · 자체 예시**
+
+형변환 문제에서는 함수가 반환하는 자료형부터 적는다. Oracle에서 TO_CHAR(날짜, 형식)은 문자, TO_DATE(문자, 형식)는 날짜를 반환한다. 월을 문자로 출력한 뒤 문자 기준으로 정렬하는 것과 원래 날짜를 시간순으로 정렬하는 것은 다른 연산이다.
+
 참고: [Oracle 함수 안내](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Functions.html).
 
 ## 5 행 필터를 정확히 쓰기
@@ -270,6 +274,10 @@ LEFT JOIN 후 `WHERE l.fee >= 200`을 쓰면 NULL 확장 행도 제외된다. �
 
 SELF JOIN은 같은 테이블에 서로 다른 별칭을 붙여 연결하는 방식이다. 조인 전후 행 수를 예상하고 조건 누락을 점검한다.
 
+**시험 대비 보충 · 자체 예시**
+
+두 표에 같은 이름의 열이 여럿이면 NATURAL JOIN은 그 열들을 모두 기준으로 삼는다. USING(부서번호)은 지정한 공통 열로, ON은 명시한 조건으로 연결한다. 부서번호와 상태 열이 모두 겹치는데 부서번호만 비교할 때 세 구문을 같은 결과로 가정하면 안 된다.
+
 참고: [Oracle 조인](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Joins.html).
 
 ## 9 서브쿼리로 질문 나누기
@@ -309,6 +317,10 @@ ORDER BY b.branch_id;
 ```
 
 대여 기록이 없는 30번 지점만 남는다. EXISTS는 선택 목록의 값보다 조건에 맞는 행의 존재 여부를 본다. 외부 행의 값을 참조하는 형태를 상관 서브쿼리라고 한다. 문장 형태만으로 실제 실행 횟수나 성능을 단정하지 않는다.
+
+**시험 대비 보충 · 자체 예시**
+
+여러 행을 반환하는 서브쿼리에서 ANY는 한 값 이상, ALL은 모든 값이 조건을 만족해야 한다. NULL이 없는 목록 (10, 30)에 대해 20 > ANY는 참이고 20 > ALL은 거짓이다. 상관 서브쿼리는 안쪽 조건이 바깥 행을 참조한다. 학생마다 자기 학과의 평균과 비교하는 것이 그 예다.
 
 참고: [Oracle 서브쿼리](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Using-Subqueries.html).
 
@@ -403,6 +415,10 @@ ORDER BY loan_id;
 
 ROWS는 행 위치 기준이며 RANGE는 정렬값의 동점 범위 등을 함께 고려할 수 있다. 기본 프레임을 추측하지 말고 필요한 범위를 명시한다.
 
+**시험 대비 보충 · 자체 예시**
+
+누적 비율과 상대 순위를 구분한다. 오름차순 값 10, 20, 20, 40에서 20의 CUME_DIST는 20 이하 3행 ÷ 전체 4행 = 0.75다. PERCENT_RANK는 (RANK−1)/(행 수−1)이므로 20의 순위 2를 대입해 1/3이다. 두 동점 행의 값은 각 함수 안에서 서로 같다.
+
 참고: [Oracle 분석 함수](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Analytic-Functions.html).
 
 ## 13 계층 관계 읽기
@@ -461,6 +477,10 @@ FROM loan;
 결과는 북쪽 300, 남쪽 480이다. PIVOT은 특정 열의 값을 결과 열로 펼치는 구문이며 남는 열이 그룹 기준이 될 수 있다. UNPIVOT은 열들을 행으로 돌리는 구문으로, 집계 과정에서 잃은 개별 원본 행까지 복원하는 역연산은 아니다. NULL 포함 여부도 문법별로 확인한다.
 
 Oracle의 `REGEXP_LIKE(code, '^[A-Z]{2}[0-9]{3}$')`는 대문자 두 개와 숫자 세 개의 형식을 검사하는 예다. 정규식 지원 범위·대소문자·문자 정렬 규칙은 환경마다 확인한다.
+
+**시험 대비 보충 · 자체 예시**
+
+정규식에서 A+는 A가 한 번 이상, A*는 0번 이상 반복되는 패턴이다. 문자열 전체가 대상인지 보려면 경계도 본다. ^A[0-9]+$는 A7과 A07에는 맞지만 XA7과 A에는 맞지 않는다. 숫자를 포함한다는 사실만으로 일치 여부를 결정할 수 없다.
 
 참고: [Oracle PIVOT·UNPIVOT](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html), [Oracle 정규식](https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/REGEXP_LIKE.html).
 
