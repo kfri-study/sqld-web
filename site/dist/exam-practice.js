@@ -1,5 +1,5 @@
 const examPractice = (() => {
-  const questions = practiceItems.flatMap((items,c) => items.map(([unit,prompt,options,correct,reason]) => ({course:c+1,unit,prompt,options:options.split('|'),correct,reason})));
+  const questions = practiceItems.flatMap((items,c) => items.map(([unit,prompt,options,correct,reason],i) => ({course:c+1,id:i+1,unit,prompt,options:options.split('|'),correct,reason})));
   const key = 'sqld-exam-practice-v1';
   const scope = [
     ['데이터 모델링의 이해',1,[[1,'모델 이해'],[2,'엔터티'],[3,'속성'],[5,'관계'],[4,'식별자']]],
@@ -27,12 +27,12 @@ const examPractice = (() => {
       if(attempt.done){
         const wrong=questions.map((q,i)=>i).filter(i=>missed(questions[i],i));
         const c1=10-wrong.filter(i=>i<10).length,c2=40-wrong.filter(i=>i>=10).length;
-        root.innerHTML=`<h2>연습 결과 · ${(c1+c2)*2} / 100점</h2><p>1과목 ${c1}/10 · 2과목 ${c2}/40 · 미응답 ${attempt.answers.filter(a=>!a).length}문항</p><h3>틀리거나 비워 둔 문제 · ${wrong.length}개</h3>${wrong.map(i=>{const q=questions[i];return `<section class="exam-review"><strong>${i+1}. ${q.prompt}</strong><div>내 답 · ${q.options[attempt.answers[i]-1]||'미응답'}</div><div>정답 · ${q.options[q.correct-1]}</div><p>${q.reason}</p>${unitLink(q)}</section>`}).join('')||'<p>모두 맞혔어요.</p>'}<button data-reset>결과 지우고 처음으로</button>`;
+        root.innerHTML=`<h2>연습 결과 · ${(c1+c2)*2} / 100점</h2><p>1과목 ${c1}/10 · 2과목 ${c2}/40 · 미응답 ${attempt.answers.filter(a=>!a).length}문항</p><h3>틀리거나 비워 둔 문제 · ${wrong.length}개</h3>${wrong.map(i=>{const q=questions[i];return `<section class="exam-review"><strong>${i+1}. ${q.prompt}</strong>${questionContext.practice(q.course,q.id)}<div>내 답 · ${q.options[attempt.answers[i]-1]||'미응답'}</div><div>정답 · ${q.options[q.correct-1]}</div><p>${q.reason}</p>${unitLink(q)}</section>`}).join('')||'<p>모두 맞혔어요.</p>'}<button data-reset>결과 지우고 처음으로</button>`;
         root.querySelector('[data-reset]').onclick=()=>{if(confirm('이번 연습 결과를 지울까요?')){attempt=null;persist();draw();}};return;
       }
       if(Date.now()>=attempt.end){finish();return;}
       const i=attempt.i,q=questions[i];
-      root.innerHTML=`<div class="exam-meta">${q.course}과목 · 문제 ${i+1}/50 <strong data-clock></strong></div><h2>${q.prompt}</h2><fieldset><legend>답 하나 선택</legend>${q.options.map((answer,j)=>`<label><input type="radio" name="exam" value="${j+1}" ${attempt.answers[i]===j+1?'checked':''}> ${answer}</label>`).join('')}</fieldset><div class="exam-actions"><button data-prev ${i===0?'disabled':''}>← 이전</button><button data-next ${i===49?'disabled':''}>다음 →</button><button data-submit>답안 제출</button></div><details><summary>문제 이동 · 응답 ${attempt.answers.filter(Boolean).length}/50</summary><div class="scope-links">${questions.map((_,j)=>`<button data-jump="${j}">${j+1}${attempt.answers[j]?' ✓':''}</button>`).join('')}</div></details>`;
+      root.innerHTML=`<div class="exam-meta">${q.course}과목 · 문제 ${i+1}/50 <strong data-clock></strong></div><h2>${q.prompt}</h2>${questionContext.practice(q.course,q.id)}<fieldset><legend>답 하나 선택</legend>${q.options.map((answer,j)=>`<label><input type="radio" name="exam" value="${j+1}" ${attempt.answers[i]===j+1?'checked':''}> ${answer}</label>`).join('')}</fieldset><div class="exam-actions"><button data-prev ${i===0?'disabled':''}>← 이전</button><button data-next ${i===49?'disabled':''}>다음 →</button><button data-submit>답안 제출</button></div><details><summary>문제 이동 · 응답 ${attempt.answers.filter(Boolean).length}/50</summary><div class="scope-links">${questions.map((_,j)=>`<button data-jump="${j}">${j+1}${attempt.answers[j]?' ✓':''}</button>`).join('')}</div></details>`;
       root.querySelectorAll('input').forEach(input=>input.onchange=()=>{if(Date.now()>=attempt.end){finish();return;}attempt.answers[i]=Number(input.value);persist();draw();});
       root.querySelector('[data-prev]').onclick=()=>step(i-1);root.querySelector('[data-next]').onclick=()=>step(i+1);
       root.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>step(Number(b.dataset.jump)));
@@ -45,7 +45,7 @@ const examPractice = (() => {
   function unitCheck(c,u){
     const extras={'1-6':{prompt:'존재하지 않는 학생번호로 수강을 등록하지 못하게 하려면?',options:['수강번호에 기본키만 둔다','수강의 학생번호에 학생을 참조하는 FK를 둔다'],correct:2,reason:'수강번호의 유일성만으로는 부모 학생이 존재하는지 확인하지 못한다. FK가 참조 대상 학생의 존재를 검사한다.'},'1-8':{prompt:'전체 논리 구조를 유지하고 인덱스만 추가했다. 어떤 독립성에 해당하는가?',options:['논리적 독립성','물리적 독립성'],correct:2,reason:'저장·접근 방식은 내부 단계다. 내부 구조의 변경이 개념 구조에 영향을 주지 않는 것이 물리적 독립성이다.'}};
     const q=questions.find(x=>x.course===c && x.unit===u)||extras[c+'-'+u];
-    return `<details class="unit-check"><summary>혼자 풀어보기 · 단원 확인문제</summary><strong>${q.prompt}</strong>${q.options.map((a,i)=>`<div>${i+1}. ${a}</div>`).join('')}<details><summary>정답과 이유</summary><b>${q.correct}번 · ${q.options[q.correct-1]}</b><div>${q.reason}</div></details></details>`;
+    return `<details class="unit-check"><summary>혼자 풀어보기 · 단원 확인문제</summary><strong>${q.prompt}</strong>${questionContext.practice(c,q.id)}${q.options.map((a,i)=>`<div>${i+1}. ${a}</div>`).join('')}<details><summary>정답과 이유</summary><b>${q.correct}번 · ${q.options[q.correct-1]}</b><div>${q.reason}</div></details></details>`;
   }
   return {mount,stop,unitCheck};
 })();
