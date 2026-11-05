@@ -57,7 +57,7 @@ for x,w,title,headers,rows in [
     for ri,row in enumerate(rows):
         if (x==48 and ri==0) or (x==528 and ri<2):b+=f'<rect x="{x+1}" y="{376+ri*32}" width="{w-2}" height="32" fill="#e5eefc"/>'
         for ci,v in enumerate(row):b+=txt(x+16+ci*(w//len(headers)),398+ri*32,v)
-b+='<path d="M348 394 H408 Q416 394 416 402 V418 Q416 426 424 426 H516" class="edge"/>'
+b+='<path d="M348 394 H528 M416 394 V418 Q416 426 424 426 H528" class="edge"/>'
 b+=txt(48,520,'없는 학생번호 999를 자식 FK에 넣으면 참조 무결성 위반입니다.','d-small')
 diagrams.append(('pk-fk','PK·FK와 실제 행 연결','학생 테이블의 기본키를 수강 테이블 외래키가 참조하고 학생 하나에 수강 여러 건이 대응한다.',b,'화살표: FK → 참조 키 · PK = Primary Key · FK = Foreign Key · NN = NOT NULL · 개념 학습용 스키마'))
 
