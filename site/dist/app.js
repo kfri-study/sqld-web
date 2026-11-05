@@ -262,6 +262,7 @@
       const recap = $('.lesson-recap');
       for (const selector of ['[data-recap-terms]', '[data-recap-points]']) recap.append($(selector));
       recap.insertAdjacentHTML('beforeend',examPractice.unitCheck(route.course, route.section));
+      memoryTabs.mount(recap,route.course,route.section);
       const exam = $('.lesson-supplement details');
       exam.querySelector('summary').textContent = '강사가 짚은 시험 포인트';
       if (!exam.querySelector('.exam-note')) exam.hidden = true;
